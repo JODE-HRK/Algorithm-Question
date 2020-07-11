@@ -13,7 +13,7 @@ int dis[maxn];
 void addEdge(int s, int c, int w)
 {
     edge[tot].to = c, edge[tot].w = w, edge[tot].nxt = head[s];
-    head[s] = tot++;
+    head[s] = tot++; // 必然是tot++，0号位必须占用
 }
 int cur[maxn << 1];
 void init()
@@ -48,7 +48,7 @@ bool bfs()
     return 0;
 }
 ll dfs(int s, ll flow)
-{
+{ //更快的dfs寻找增广路，其实是优化了下一个bfs
     if (s == en)
         return flow;
     ll _flow = 0, __flow;
