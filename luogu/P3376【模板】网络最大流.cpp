@@ -13,7 +13,7 @@ int dis[maxn];
 void addEdge(int s, int c, int w)
 {
     edge[tot].to = c, edge[tot].w = w, edge[tot].nxt = head[s];
-    head[s] = tot++; // 必然是tot++，0号位必须占用
+    head[s] = tot++; // 必然是tot++，0号位必须占用对应下面的 ~i
 }
 int cur[maxn << 1];
 void init()
