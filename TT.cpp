@@ -1,78 +1,46 @@
-#include <cstdio>
-#include <algorithm>
-#include <cstdlib>
-#include <cmath>
-#include <cstring>
-#include <iomanip>
-#include <iostream>
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: JODEHRK
+ * @Date: 2020-07-12 09:21:54
+ * @LastEditors: JODEHRK
+ * @LastEditTime: 2020-07-17 21:18:32
+ */
+#include <bits/stdc++.h>
+#define ll long long
+#define inf 0x7fffffff
+#define INF 1000000000000ll
+#define pii pair<int, int>
+#define pll pair<ll, ll>
+const int maxn = 1e6 + 7;
+const int mod = 998244353;
 using namespace std;
-const int maxn = 1e7 + 7;
-int cnt = 0, hi[maxn], k, dp[maxn], f[maxn], ans = 1, ti = 1;
-int n;
-void getans()
+vector<string> A;
+string str;
+bool cmp(const int &l1, const int &l2) //注意，重点在这，两字符串的比较方式
 {
-    f[1] = dp[1] = hi[1];
-    for (int i = 2; i <= cnt; i++)
-    {
-        if (f[ans] >= hi[i])
-            f[++ans] = hi[i];
-        else
-        {
-            int h = 1, d = ans;
-            while (h < d)
-            {
-                int mid = (h + d) >> 1;
-                if (f[mid] >= hi[i])
-                    h = mid + 1;
-                else
-                    d = mid;
-            }                        //二分在k数组里找第一个小于a[i]的数
-            f[h] = max(f[h], hi[i]); //进行比较，贪心思想
-        }
-        if (dp[ti] < hi[i])
-            dp[++ti] = hi[i];
-        else
-        {
-            int x = 1, y = ti, mid;
-            while (x < y)
-            {
-                mid = (x + y) >> 1;
-                if (dp[mid] >= hi[i])
-                    y = mid;
-                else
-                    x = mid + 1;
-            }                          //二分在g数组里找第一个大于等于a[i]的数
-            dp[x] = min(dp[x], hi[i]); //进行比较，贪心思想
-        }
-    }
+    string str1 = str.substr(0, l1), str2 = str.substr(0, l2);
+    return str1 + str2 > str2 + str1 ? true : false;
 }
-int getUnsigned()
-{
-    char ch = getchar();
-    while (ch < '0' || ch > '9')
-        ch = getchar();
-
-    int ret = (int)(ch - '0');
-    while ('0' <= (ch = getchar()) && ch <= '9')
-        ret = ret * 10 + (int)(ch - '0');
-    return ret;
-}
+int a[maxn];
+ll b[maxn];
 int main()
 {
-    while (1)
+    // printf("%d\n", 1ll * 3313123312 % mod);
+    cin >> str;
+    int len = str.length();
+    b[0] = 1;
+    for (int i = 1; i <= len; i++)
+        b[i] = b[i - 1] * 10 % mod, a[i - 1] = i;
+    sort(a, a + len, cmp);
+    ll sum = 0, multi = 1;
+    for (int i = len - 1; i >= 0; i--)
     {
-        n = getUnsigned();
-        if (n == 0)
-            break;
-        ans = 1, ti = 1;
-        cnt = n;
-        for (int i = 1; i <= n; i++)
-            hi[i] = getUnsigned();
-        getans();
-        if (n - ans <= 1 || n - ti <= 1)
-            printf("Y\n");
-        else
-            printf("N\n");
+        string ss = str.substr(0, a[i]);
+        cout << ss << endl;
+        sum = (sum % mod + atoll(ss.c_str()) % mod * multi % mod) % mod;
+        multi = multi * b[a[i]] % mod;
     }
+    printf("%lld", sum);
     return 0;
 }

@@ -4,15 +4,9 @@
  * @Author: JODEHRK
  * @Date: 2020-07-14 11:01:05
  * @LastEditors: JODEHRK
- * @LastEditTime: 2020-07-14 11:01:17
+ * @LastEditTime: 2020-07-14 13:12:57
  */ 
-#include<iostream>
-#include<cstdlib>
-#include<cstdio>
-#include<cstring>
-#include<cmath>
-#include<algorithm>
-#include<queue>
+#include <bits/stdc++.h>
 #define N 306
 #define M 4005
 using namespace std;
