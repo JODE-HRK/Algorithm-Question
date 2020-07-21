@@ -1,68 +1,96 @@
-/*
- * @Descripttion: 
- * @version: 
- * @Author: JODEHRK
- * @Date: 2020-07-16 15:48:25
- * @LastEditors: JODEHRK
- * @LastEditTime: 2020-07-16 16:22:53
- */
 #include <bits/stdc++.h>
-#define rep(i, x, y, z) for (register int i = (x); i <= (y); i += (z))
 #define ll long long
-#define inf 0x7fffffff
-#define INF 1000000000000ll
-#define pii pair<int, int>
-#define pll pair<ll, ll>
-const int maxn = 1e6 + 7;
 using namespace std;
-int n, k;
-ll ans, f[maxn];
-int head[maxn], date[maxn], nxt[maxn], tot = 0;
-int lim[maxn], minn[maxn];
-map<ll, int> M;
-struct S
+const int maxn = 1e6 + 7;
+int n, m, st, en;
+struct Edge
 {
-    int s[maxn];
-    ll opt;
-    friend bool operator==(S a, S b)
-    {
-        rep(i, 1, k, 1) if (a.s[i] != b.s[i]) return 0;
-        return 1;
-    }
-} sum[maxn];
-inline int read()
+    int to, nxt;
+    ll w;
+} edge[maxn << 1];
+int head[maxn], tot = 0;
+int dis[maxn];
+void addEdge(int s, int c, int w)
 {
-    int x = 0;
-    char c = getchar();
-    while (c > '9' || c < '0')
-        c = getchar();
-    while (c >= '0' && c <= '9')
-        x = x * 10 + c - '0', c = getchar();
-    return x;
+    edge[tot].to = c, edge[tot].w = w, edge[tot].nxt = head[s];
+    head[s] = tot++;
 }
-void build()
+int cur[maxn << 1];
+void init()
 {
-    fill(lim, lim + 1 + n, inf);
-    rep(i, 1, m, 1)
+    for (int i = 0; i <= tot; i++)
+        cur[i] = head[i];
+}
+bool bfs()
+{
+    fill(dis, dis + 1 + n, -1);
+    queue<int> Q;
+    while (!Q.empty())
+        Q.pop();
+    Q.push(st);
+    dis[st] = 0;
+    while (!Q.empty())
     {
-        memset(minn, 0x3f, sizeof(minn));
-        for (int j = n; j; j--)
+        int now = Q.front();
+        Q.pop();
+        for (int i = head[now]; ~i; i = edge[i].nxt)
         {
-            minn
+            int v = edge[i].to;
+            if (edge[i].w && dis[v] == -1)
+            {
+                dis[v] = dis[now] + 1;
+                if (v == en)
+                    return 1;
+                Q.push(v);
+            }
         }
     }
+    return 0;
+}
+ll dfs(int s, ll flow)
+{
+    if (s == en)
+        return flow;
+    ll _flow = 0, __flow;
+    for (int i = cur[s]; ~i; i = edge[i].nxt)
+    {
+        int v = edge[i].to;
+        if (dis[v] == dis[s] + 1 && edge[i].w)
+        {
+            __flow = dfs(v, min(flow, edge[i].w));
+            flow -= __flow;
+            edge[i].w -= __flow;
+            _flow += __flow;
+            edge[i ^ 1].w += __flow;
+            if (!flow)
+                break;
+        }
+    }
+    if (!_flow)
+        dis[s] = -1;
+    return _flow;
+}
+ll Dinic()
+{
+    ll ans = 0;
+    while (bfs())
+    { //bfs构建层次网络 判断是否存在一条到en的点
+        init();
+        ans += dfs(st, 0x7fffffff); //一次dfs完成所有增广
+    }
+    return ans;
 }
 int main()
 {
-    n = read(), k = read();
-    rep(i, 1, n, 1)
+    scanf("%d %d %d %d", &n, &m, &st, &en);
+    fill(head, head + 2 + 2 * m, -1);
+    for (int i = 1; i <= m; i++)
     {
-        string str;
-        scanf("%s", str + 1);
-        rep(j, 1, k, 1)
-            sum[j]
-                .s[i] = sum[j - 1].s[i] + (str[j] == ')' ? -1 : 1); //（为1，）为-1，计算前缀和
+        int fr, to, w;
+        scanf("%d %d %d", &fr, &to, &w);
+        addEdge(fr, to, w);
+        addEdge(to, fr, 0);
     }
-    build();
+    printf("%lld", Dinic());
     return 0;
 }

@@ -2,9 +2,9 @@
  * @Descripttion: 
  * @version: 
  * @Author: JODEHRK
- * @Date: 2020-07-13 21:35:45
+ * @Date: 2020-07-12 09:21:54
  * @LastEditors: JODEHRK
- * @LastEditTime: 2020-07-18 15:20:21
+ * @LastEditTime: 2020-07-17 20:52:13
  */
 #include <bits/stdc++.h>
 #define ll long long
@@ -12,87 +12,64 @@
 #define INF 1000000000000ll
 #define pii pair<int, int>
 #define pll pair<ll, ll>
-const int maxn = 1e6 + 7;
+const int maxn = 17;
+const int mod = 998244353;
+const int base = 127;
 using namespace std;
-inline int read()
+vector<string> A;
+string str;
+int a[maxn], HASH[maxn], len, multi[maxn], sum[maxn];
+int getAX(int lol, int l1, int l2)
 {
-	int x = 0;
-	char c = getchar();
-	while (c > '9' || c < '0')
-		c = getchar();
-	while (c >= '0' && c <= '9')
-		x = x * 10 + c - '0', c = getchar();
-	return x;
+	return HASH[lol];
 }
-int n, m;
-int head[maxn], tot, fa[maxn];
-queue<int> Q[maxn];
-struct Edge
+int getXA(int lol, int l1, int l2)
 {
-	int fr, to, nxt;
-} edge[maxn];
-void init()
-{
-	tot = 0;
-	fill(head, head + 1 + n, -1);
-	for (int i = 0; i < n; i++)
-		fa[i] = i, Q[i].push(i);
+	if (lol <= l2 - l1)
+		return (HASH[l1 + lol] - HASH[l1] + mod) % mod;
+	else
+		return (((HASH[l2] - HASH[l1] + mod) % mod) * multi[lol - (l2 - l1)] % mod + HASH[lol - (l2 - l1)]) % mod;
 }
-void addEdge(int x, int y)
+bool cmp(int l1, int l2) //注意，重点在这，两字符串的比较方式
 {
-	edge[tot] = (Edge){x, y, head[x]};
-	head[x] = tot++;
-}
-int fdfa(int x)
-{
-	return fa[x] == x ? x : fa[x] = fdfa(fa[x]);
-}
-void add(int now)
-{
-	for (int i = head[now]; ~i; i = edge[i].nxt)
+	int p = 0;
+	if (l1 < l2)
+		p = 1;
+	else
+		swap(l1, l2);
+	int l = 1, r = max(l1, l2), mid;
+	while (l < r)
 	{
-		int tto = edge[i].to;
-		fa[fdfa(tto)] = now;
-		Q[now].push(tto);
+		mid = (l + r) >> 1;
+		int AX = getAX(mid, l1, l2), XA = getXA(mid, l1, l2);
+		if (AX == XA)
+			l = mid;
+		else
+			r = mid;
 	}
+	return str[l] > str[l + l1] && p;
 }
 int main()
 {
-	// freopen(".in", "r", stdin);
-	int t;
-	t = read();
-	while (t--)
+	cin >> str;
+	len = str.length();
+	HASH[0] = str[0] * base % mod;
+	multi[0] = 1;
+	a[0] = 1;
+	sum[0] = str[0] - '0';
+	for (int i = 1; i < len; i++)
 	{
-		n = read(), m = read();
-		init();
-		for (int i = 1; i <= m; i++)
-		{
-			int x, y;
-			x = read(), y = read();
-			addEdge(x, y);
-			addEdge(y, x);
-		}
-		int q;
-		q = read();
-		while (q--)
-		{
-			int o;
-			o = read();
-			int f = fdfa(o);
-			int s = Q[f].size();
-			while (s--)
-			{
-				int x = Q[f].front();
-				Q[f].pop();
-				add(f);
-			}
-		}
-		for (int i = 0; i < n; i++)
-			printf("%d ", fdfa(i));
-		cout << endl;
+		HASH[i] = (HASH[i - 1] + str[i] * base % mod) % mod;
+		multi[i] = multi[i - 1] * base % mod;
+		sum[i] = (sum[i - 1] * 10 % mod + str[i] - '0') % mod;
+		a[i] = i + 1;
 	}
+	sort(a, a + len, cmp);
+	for (int i = 0; i < len; i++)
+		cout << str.substr(0, a[i]) << endl;
 	return 0;
 }
-/*
 
+/*
+114514
 */
