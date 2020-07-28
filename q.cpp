@@ -1,73 +1,58 @@
+#pragma GCC optimize(2)
 #include <bits/stdc++.h>
+#define ll int
 using namespace std;
-const int maxn = 1e6 + 7;
-int n, m, s;
-int head[maxn], tot, lg[maxn], fa[maxn][22], depth[maxn];
-struct Edge
+const int maxn = 5e6 + 7;
+ll s[maxn], sv[maxn], a[maxn], n, mod, inv[maxn], k;
+inline ll read()
 {
-    int fr, to, w, nxt;
-} edge[maxn];
-void init()
-{
-    tot = 0;
-    fill(head, head + 1 + n, -1);
-}
-void addEdge(int fr, int to, int w)
-{
-    edge[tot] = (Edge){fr, to, w, head[fr]};
-    head[fr] = tot++;
-}
-void dfs(int now, int father)
-{ //dfs建树
-    fa[now][0] = father, depth[now] = depth[father] + 1;
-    for (int i = 1; (1 << i) <= depth[now]; i++)
-        fa[now][i] = fa[fa[now][i - 1]][i - 1];
-    for (int i = head[now]; ~i; i = edge[i].nxt)
-        if (edge[i].to != father)
-            dfs(edge[i].to, now);
-}
-void pre()
-{
-    for (int i = 1; i <= n; i++)
-        lg[i] = lg[i - 1] + ((1 << lg[i - 1]) == i);
-    depth[0] = 0;
-    dfs(s, 0);
-}
-int getans(int u, int v)
-{
-    if (depth[u] < depth[v])
-        swap(u, v);
-    while (depth[u] > depth[v])
-        u = fa[u][lg[depth[u] - depth[v]] - 1];
-    if (u == v)
-        return u;
-    for (int k = lg[depth[u]] - 1; k >= 0; k--)
-        if (fa[u][k] != fa[v][k])
-            u = fa[u][k], v = fa[v][k];
-    return fa[u][0];
-}
-void getLCA()
-{
-    scanf("%d %d %d", &n, &m, &s); //点的数量，询问数量、源点数量
-    init();
-    for (int i = 1; i < n; i++)
+    ll s = 0, w = 1;
+    char ch = getchar();
+    while (ch < '0' || ch > '9')
     {
-        int u, v;
-        scanf("%d %d", &u, &v);
-        addEdge(u, v, 0);
-        addEdge(v, u, 0);
+        if (ch == '-')
+            w = -1;
+        ch = getchar();
     }
-    pre();
-    while (m--)
+    while (ch >= '0' && ch <= '9')
+        s = ((s << 3) + (s << 1)) + ch - '0', ch = getchar();
+    return s * w;
+}
+ll getinv(ll base, ll power) //此处的power是 mod-2
+{
+    ll ans = 1;
+    while (power)
     {
-        int u, v;
-        scanf("%d %d", &u, &v);
-        printf("%d\n", getans(u, v));
+        if (power & 1)
+            ans = ans * base % mod;
+        power >>= 1;
+        base = (base * base) % mod;
     }
+    return ans;
+}
+void consecutive_distinct_inv() //求任意给定n个数的逆元
+{
+    s[0] = 1;
+    for (register int i = 1; i <= n; ++i)
+        s[i] = s[i - 1] * a[i] % mod;
+    sv[n] = getinv(s[n], mod - 2);
+    for (register int i = n; i >= 1; --i)
+        sv[i - 1] = sv[i] * a[i] % mod;
+    for (register int i = 1; i <= n; ++i)
+        inv[i] = sv[i] * s[i - 1] % mod;
 }
 int main()
 {
-    // freopen(".in", "r", stdin);
-    LCA();
+    scanf("%lld %lld %lld", &n, &mod, &k);
+    for (register int i = 1; i <= n; ++i)
+        a[i] = read();
+    consecutive_distinct_inv();
+    ll multi = 1, ans = 0;
+    for (register int i = 1; i <= n; ++i)
+    {
+        multi = (multi * k) % mod;
+        ans = (ans + multi * inv[i] % mod) % mod;
+    }
+    printf("%lld", ans);
     return 0;
 }
