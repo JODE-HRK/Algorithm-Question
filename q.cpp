@@ -1,58 +1,118 @@
-#pragma GCC optimize(2)
 #include <bits/stdc++.h>
-#define ll int
+#define ll long long
 using namespace std;
-const int maxn = 5e6 + 7;
-ll s[maxn], sv[maxn], a[maxn], n, mod, inv[maxn], k;
-inline ll read()
+const int maxn = 1e5 + 7;
+int n, q, lastans = 0, tot = 0;
+int a[maxn], tree[maxn << 4];
+int cmtree[maxn], ls[maxn << 8], rs[maxn << 8], sum[maxn << 8];
+unordered_map<int, int> pre; //相对于map来说，元素无序，但查找迅速O(1)
+void update(int l, int r, int node, int last, int p, int v)
 {
-    ll s = 0, w = 1;
-    char ch = getchar();
-    while (ch < '0' || ch > '9')
-    {
-        if (ch == '-')
-            w = -1;
-        ch = getchar();
-    }
-    while (ch >= '0' && ch <= '9')
-        s = ((s << 3) + (s << 1)) + ch - '0', ch = getchar();
-    return s * w;
+    ls[node] = ls[last], rs[node] = rs[last];
+    sum[node] = sum[last] + v;
+    if (l == r)
+        return;
+    int mid = (l + r) >> 1;
+    if (mid >= p)
+        update(l, mid, ls[node] = ++tot, ls[last], p, v);
+    else
+        update(mid + 1, r, rs[node] = ++tot, rs[last], p, v);
 }
-ll getinv(ll base, ll power) //此处的power是 mod-2
+int cmtreequery(int l, int r, int node, int ql, int qr)
 {
-    ll ans = 1;
-    while (power)
-    {
-        if (power & 1)
-            ans = ans * base % mod;
-        power >>= 1;
-        base = (base * base) % mod;
-    }
+    if (l >= ql && r <= qr)
+        return sum[node];
+    int mid = (l + r) >> 1;
+    int ans = 0;
+    if (mid >= ql)
+        ans = cmtreequery(l, mid, ls[node], ql, qr);
+    if (mid < qr)
+        ans += cmtreequery(mid + 1, r, rs[node], ql, qr);
     return ans;
 }
-void consecutive_distinct_inv() //求任意给定n个数的逆元
+void build(int l, int r, int node)
 {
-    s[0] = 1;
-    for (register int i = 1; i <= n; ++i)
-        s[i] = s[i - 1] * a[i] % mod;
-    sv[n] = getinv(s[n], mod - 2);
-    for (register int i = n; i >= 1; --i)
-        sv[i - 1] = sv[i] * a[i] % mod;
-    for (register int i = 1; i <= n; ++i)
-        inv[i] = sv[i] * s[i - 1] % mod;
+    if (l == r)
+    {
+        tree[l] = a[l];
+        return;
+    }
+    int mid = (l + r) >> 1;
+    build(l, mid, node << 1);
+    build(mid + 1, r, node << 1 | 1);
+    tree[node] = tree[node << 1] & tree[node << 1 | 1]; //记录所有区间与在一起的值
+}
+int query(int l, int r, int node, int ql, int qr)
+{
+    if (l >= ql && r <= qr)
+        return tree[node];
+    int mid = (l + r) >> 1, ans = (1 << 30) - 1;
+    if (mid >= ql)
+        ans &= query(l, mid, node << 1, ql, qr);
+    if (mid < qr)
+        ans &= query(mid + 1, r, node << 1 | 1, ql, qr);
+    return ans;
 }
 int main()
 {
-    scanf("%lld %lld %lld", &n, &mod, &k);
-    for (register int i = 1; i <= n; ++i)
-        a[i] = read();
-    consecutive_distinct_inv();
-    ll multi = 1, ans = 0;
-    for (register int i = 1; i <= n; ++i)
+    scanf("%d", &n);
+    for (int i = 1; i <= n; i++)
+        scanf("%d", &a[i]);
+    build(1, n, 1);
+    // cout << "I'm SB" << endl;
+    for (int i = 1; i <= n; i++)
     {
-        multi = (multi * k) % mod;
-        ans = (ans + multi * inv[i] % mod) % mod;
+        if (pre[a[i]])
+        {
+            update(1, n, cmtree[i] = ++tot, cmtree[i - 1], pre[a[i]], -1);
+            int now = ++tot;
+            update(1, n, now, cmtree[i], i, 1);
+            //为什么update是1和-1啊！！！
+            cmtree[i] = now;
+        }
+        else
+            update(1, n, cmtree[i] = ++tot, cmtree[i - 1], i, 1);
+        pre[a[i]] = i;
+        int v = a[i], p = i;
+        for (int j = 30; j; j--)
+        {
+            int l = 1, r = p - 1, mid, ans = 0;
+            while (r >= l)
+            {
+                mid = (l + r) >> 1;
+                if (query(1, n, 1, mid, i) < v)
+                    ans = mid, l = mid + 1;
+                else
+                    r = mid - 1;
+            }
+            if (!ans)
+                break;
+            v = query(1, n, 1, ans, i);
+            p = ans;
+            int now;
+            if (pre[v])
+            {
+                now = ++tot;
+                update(1, n, now, cmtree[i], pre[v], -1);
+                cmtree[i] = now;
+            }
+            now = ++tot;
+            update(1, n, now, cmtree[i], p, 1);
+            cmtree[i] = now;
+            pre[v] = p;
+        }
     }
-    printf("%lld", ans);
+
+    scanf("%d", &q);
+    while (q--)
+    {
+        int l, r;
+        scanf("%d %d", &l, &r);
+        l = (l ^ lastans) % n + 1;
+        r = (r ^ lastans) % n + 1;
+        if (l > r)
+            swap(l, r);
+        printf("%d\n", lastans = cmtreequery(1, n, cmtree[r], l, r));
+    }
     return 0;
 }
