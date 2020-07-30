@@ -1,75 +1,72 @@
-/*
- * @Descripttion: 
- * @version: 
- * @Author: JODEHRK
- * @Date: 2020-07-12 09:21:54
- * @LastEditors: JODEHRK
- * @LastEditTime: 2020-07-17 20:52:13
- */
 #include <bits/stdc++.h>
-#define ll long long
-#define inf 0x7fffffff
-#define INF 1000000000000ll
-#define pii pair<int, int>
-#define pll pair<ll, ll>
-const int maxn = 17;
-const int mod = 998244353;
-const int base = 127;
 using namespace std;
-vector<string> A;
-string str;
-int a[maxn], HASH[maxn], len, multi[maxn], sum[maxn];
-int getAX(int lol, int l1, int l2)
+#define dir(a, b) (a >> b)
+const int Max = 1e6 + 7;
+int root[Max], tot, val[Max];
+struct node
 {
-	return HASH[lol];
+	int lef, rig, sum;
+} msegtr[Max * 40];
+map<int, int> mp;
+void Init()
+{
+	tot = 0;
+	msegtr[0].lef = msegtr[0].rig = msegtr[0].sum = 0;
+	root[0] = 0;
+	mp.clear();
+	return;
 }
-int getXA(int lol, int l1, int l2)
+void Create(int sta, int enn, int &x, int y, int pos, int aad)
 {
-	if (lol <= l2 - l1)
-		return (HASH[l1 + lol] - HASH[l1] + mod) % mod;
+	msegtr[++tot] = msegtr[y];
+	msegtr[tot].sum += aad;
+	x = tot;
+	if (sta == enn)
+		return;
+	int mid = dir(sta + enn, 1);
+	if (mid >= pos)
+		Create(sta, mid, msegtr[x].lef, msegtr[y].lef, pos, aad);
 	else
-		return (((HASH[l2] - HASH[l1] + mod) % mod) * multi[lol - (l2 - l1)] % mod + HASH[lol - (l2 - l1)]) % mod;
+		Create(mid + 1, enn, msegtr[x].rig, msegtr[y].rig, pos, aad);
+	return;
 }
-bool cmp(int l1, int l2) //注意，重点在这，两字符串的比较方式
+int Query(int sta, int enn, int x, int y) //只有左边有界限
 {
-	int p = 0;
-	if (l1 < l2)
-		p = 1;
+	if (sta >= y)
+		return msegtr[x].sum;
+	int mid = dir(sta + enn, 1);
+	if (mid >= y)
+		return Query(sta, mid, msegtr[x].lef, y) + msegtr[msegtr[x].rig].sum;
 	else
-		swap(l1, l2);
-	int l = 1, r = max(l1, l2), mid;
-	while (l < r)
-	{
-		mid = (l + r) >> 1;
-		int AX = getAX(mid, l1, l2), XA = getXA(mid, l1, l2);
-		if (AX == XA)
-			l = mid;
-		else
-			r = mid;
-	}
-	return str[l] > str[l + l1] && p;
+		return Query(mid + 1, enn, msegtr[x].rig, y);
 }
 int main()
 {
-	cin >> str;
-	len = str.length();
-	HASH[0] = str[0] * base % mod;
-	multi[0] = 1;
-	a[0] = 1;
-	sum[0] = str[0] - '0';
-	for (int i = 1; i < len; i++)
+	int n, m, temp;
+	int lef, rig;
+	while (~scanf("%d", &n))
 	{
-		HASH[i] = (HASH[i - 1] + str[i] * base % mod) % mod;
-		multi[i] = multi[i - 1] * base % mod;
-		sum[i] = (sum[i - 1] * 10 % mod + str[i] - '0') % mod;
-		a[i] = i + 1;
+		Init();
+		for (int i = 1; i <= n; ++i)
+		{
+			scanf("%d", &val[i]);
+			if (!mp.count(val[i])) //直接加
+			{
+				Create(1, n, root[i], root[i - 1], i, 1); //注意是在i这个位置加1，不是权值线段树的val[i]位置加1
+			}
+			else
+			{
+				Create(1, n, temp, root[i - 1], mp[val[i]], -1); //先在原位置减去1
+				Create(1, n, root[i], temp, i, 1);
+			}
+			mp[val[i]] = i;
+		}
+		scanf("%d", &m);
+		for (int i = 0; i < m; ++i)
+		{
+			scanf("%d %d", &lef, &rig);
+			printf("%d\n", Query(1, n, root[rig], lef)); //在rig的历史版本上找(lef,rig)的值
+		}
 	}
-	sort(a, a + len, cmp);
-	for (int i = 0; i < len; i++)
-		cout << str.substr(0, a[i]) << endl;
 	return 0;
 }
-
-/*
-114514
-*/
