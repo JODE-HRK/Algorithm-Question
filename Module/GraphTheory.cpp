@@ -139,7 +139,7 @@ struct XOR_MST
     }
 };
 /*
-最大生成树 取 LCA路径上的最小值
+最大生成树 取 LCA路径上的最小值 Kruscal
 */
 struct MAST_LCA_route_minnum
 {
@@ -249,6 +249,61 @@ struct MAST_LCA_route_minnum
             else
                 printf("-1\n");
         }
+        return 0;
+    }
+};
+/*
+迪杰斯特拉 dijkstra
+时间复杂度：不使用堆优化O（n^2)     使用堆优化O((m+n)log n)
+堆优化适用稀疏图
+*/
+struct Dij
+{
+};
+/*
+Prufer序列
+能够将无根树化成唯一的一个序列，又能从这个唯一序列中化出无根树
+*/
+struct Prufer
+{ //洛谷P6086
+    int n, m;
+    int fa[maxn], d[maxn], p[maxn]; //给定父亲序列，或者给定prufer序列
+    ll ans = 0;                     //记录度数，答案
+    int main()
+    {
+        scanf("%d %d", &n, &m);
+        if (m == 1) //树转Prufer序列
+        {
+            for (int i = 1; i < n; i++)
+                scanf("%d", &fa[i]), ++d[fa[i]]; //对父亲节点度数+1
+            for (int i = 1, j = 1; i <= n - 2; i++, j++)
+            {
+                while (d[j]) //查询第一个位置度数为0的点
+                    ++j;
+                p[i] = fa[j];                                //将这个度数为0的点添加进prufer序列
+                while (i <= n - 2 && !--d[p[i]] && p[i] < j) //如果起到了连锁反应即一直更新
+                    p[i + 1] = fa[p[i]], ++i;
+            }
+            for (int i = 1; i <= n - 2; i++)
+                ans ^= 1ll * i * p[i]; //求prufer序列的i*a[i]异或和
+        }
+        else //Prufer序列转树
+        {
+            for (int i = 1; i <= n - 2; i++)
+                scanf("%d", &p[i]), ++d[p[i]];
+            p[n - 1] = n;
+            for (int i = 1, j = 1; i < n; i++, j++)
+            {
+                while (d[j]) //找到第一个度数为0的点
+                    ++j;
+                fa[j] = p[i]; //反向设定
+                while (i < n && !--d[p[i]] && p[i] < j)
+                    fa[p[i]] = p[i + 1], ++i;
+            }
+            for (int i = 1; i < n; i++)
+                ans ^= 1ll * i * fa[i]; //求fa数组的i*fa[i] 异或和
+        }
+        printf("%lld", ans);
         return 0;
     }
 };

@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #define ll long long
+#define ull unsigned long long
+#define ui unsigned int
 using namespace std;
 const int maxn = 1e7 + 7;
 /*
@@ -41,6 +43,43 @@ struct KMP
                 k = nxt[k];
             }
         }
+    }
+};
+/*
+使用kmp的nxt数组求字符串的循环节
+*/
+struct Circular_section
+{
+    string s;
+    int nxt[maxn], len;
+    void getnxt()
+    {
+        int len = s.length();
+        fill(nxt, nxt + 1 + len, 0);
+        nxt[0] = -1;
+        for (int i = 0; i < len; i++)
+        {
+            int k = nxt[i];
+            while (k > 0 && s[i] != s[k])
+                k = nxt[k];
+            if (k == -1 || s[k] == s[i])
+                nxt[i + 1] = k + 1;
+        }
+    }
+    int main()
+    {
+        cin >> s;
+        len = s.length();
+        getnxt();
+        if (nxt[len] && len % (len - nxt[len]) == 0) //每次都是忘记了有个%==0的条件
+        {
+            printf("YES\n");
+            printf("Len: %d\n", len - nxt[len]);           //循环节长度
+            printf("Times: %d\n", len / (len - nxt[len])); //循环次数
+        }
+        else
+            printf("NO\n");
+        return 0;
     }
 };
 /*Ekmp，字符串的扩展，计算S1中的每一个后缀子串与S2的最长公共前缀
@@ -137,5 +176,84 @@ struct MANACHER
             ss[++op] = '#', ss[++op] = s[i];
         ss[++op] = '#', ss[++op] = '\0';
         manacher();
+    }
+};
+/*
+字符串的最小/大表示法
+一个字符串循环排列，字典序最小/大的那个就是最小/大表示
+循环同构
+如： abdc 的最大表示法是 dcab
+*/
+struct Min_Expression //最小表示法
+{
+    int a[maxn], n; //n为长度，位置从0开始
+    int getmin()
+    {
+        int i = 0, j = 1, k = 0, t;
+        while (i < n && j < n && k < n)
+        {
+            t = a[(i + k) % n] - a[(j + k) % n]; //t表示当前两位置的大小
+            if (!t)
+                k++;
+            else
+            {
+                if (t > 0) //大于改成小于就是最大表示法
+                    i = i + k + 1;
+                else
+                    j = j + k + 1;
+                if (i == j)
+                    ++j;
+                k = 0;
+            }
+        }
+        return (i < j ? i : j); //返回最小表示法开始的位置
+    }
+};
+/*
+字符串哈希
+现在我们经常使用map进行离散化等一些映射操作，但当对于字符串的时候，我们往往像将其用成hash
+但是有时候会被时间卡住，
+所以手动哈希还是得学一学的
+手动哈希时间快，但是空间大
+map则相反
+*/
+struct HASH
+{
+    map<string, int> Hash;
+    int ans = 0, n;
+    string s;
+    void MapVersion()
+    {
+        scanf("%d", &n);
+        for (int i = 1; i <= n; i++)
+        {
+            cin >> s;
+            if (Hash.find(s) == Hash.end())
+                Hash[s] = i, ans++; //统计不同单词的个数
+        }
+        printf("%d", ans);
+    }
+    const int mod = 998244353;
+    const int base = 2333;
+    void work()
+    { //手动哈希
+        priority_queue<int> Q;
+        scanf("%d", &n);
+        for (int i = 1; i <= n; i++)
+        {
+            cin >> s;
+            int hash = 0;
+            for (int j = 0; j < s.length(); j++)
+                hash = (hash * base + s[j]) % mod;
+            Q.push(hash);
+        }
+        int last = -1;
+        while (!Q.empty())
+        {
+            if (Q.top() != last)
+                ans++;
+            Q.pop();
+        }
+        printf("%d", ans);
     }
 };

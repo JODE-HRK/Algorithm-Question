@@ -1,67 +1,61 @@
 #include <bits/stdc++.h>
+#define ll long long
 using namespace std;
-const int maxn = 1e6 + 7;
-int n, q;
-int a[maxn], last[maxn], ans[maxn], val[maxn];
-struct Query
+const int mod = 1e9 + 7;
+const int maxn = 1e5 + 7;
+int n, m, r, p;
+int val[maxn], head[maxn], tot = 0;
+int opt, x, y, z;
+int depth[maxn];
+struct Edge
 {
-    int l, r, id;
-    bool operator<(const Query &x)
-    {
-        return r < x.r;
-    }
-} que[maxn];
-int lowbit(int x)
+    int fr, to, nxt;
+} edge[maxn];
+void addEdge(int fr, int to)
 {
-    return x & (-x);
+    edge[tot] = (Edge){fr, to, head[fr]};
+    head[fr] = tot++;
 }
-void add(int pos, int c)
+void dfs(int now, int fa)
 {
-    while (pos <= n)
-    {
-        val[pos] += c;
-        pos += lowbit(pos);
-    }
-}
-int getsum(int pos)
-{
-    int res = 0;
-    while (pos)
-    {
-        res += val[pos];
-        pos -= lowbit(pos);
-    }
-    return res;
+    depth[now] = depth[fa] + 1;
+    for (int i = head[now]; ~i; i = edge[i].nxt)
+        if (edge[i].to != fa)
+            dfs(edge[i].to, now);
 }
 int main()
 {
-    scanf("%d", &n);
+    scanf("%d %d", &n, &m, &r, &p);
     for (int i = 1; i <= n; i++)
-        scanf("%d", &a[i]);
-    scanf("%d ", &q);
-    for (int i = 1; i <= q; i++)
+        scanf("%d", &val[i]);
+    for (int i = 1; i < n; i++)
     {
-        scanf("%d %d", &que[i].l, &que[i].r);
-        que[i].id = i;
+        int u, v;
+        scanf("%d %d", &u, &v);
+        addEdge(u, v);
+        addEdge(v, u);
     }
-    sort(que + 1, que + 1 + q);
-    int pre = 0;
-    for (int i = 1; i <= q; i++)
+    depth[0] = 0;
+    dfs(1, 0);
+    for (int i = 1; i <= m; i++)
     {
-        if (que[i].r > pre)
+        scanf("%d", &opt);
+        if (opt == 1)
         {
-            for (int j = pre + 1; j <= que[i].r; j++)
-            {
-                if (last[a[j]])
-                    add(last[a[j]], -1);
-                add(j, 1);
-                last[a[j]] = j; //此处如果数很大的话，可以离散化或者用map来记录上一次的位置
-                pre = que[i].r;
-            }
+            scanf("%d %d %d", &x, &y, &z);
+            pathAdd(x, y, z);
         }
-        ans[que[i].id] = getsum(que[i].r) - getsum(que[i].l - 1);
+        else if (opt == 2)
+        {
+            scanf("%d %d", &x, &y);
+        }
+        else if (opt == 3)
+        {
+            scanf("%d %d", &x, &z);
+        }
+        else
+        {
+            scanf("%d", &x);
+        }
     }
-    for (int i = 1; i <= q; i++)
-        printf("%d\n", ans[i]);
-    return 0;
 }
