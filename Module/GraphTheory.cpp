@@ -307,3 +307,98 @@ struct Prufer
         return 0;
     }
 };
+/*
+LCA+差分数组
+计算树上节点的最大值——树上 点的差分
+例题：洛谷P3128  [USACO15DEC]Max Flow P
+时间复杂度为 O(n) 修改和查询都是O(n)
+*/
+struct DifferentialArray //On Node
+{
+    int n, k, tot;
+    int head[maxn], depth[maxn], lg[maxn], fa[maxn][32];
+    int chafen[maxn], ans;
+    struct Edge
+    {
+        int fr, to, nxt;
+    } edge[maxn];
+    void init()
+    {
+        tot = 0, ans = -1;
+        fill(head, head + 1 + n, -1);
+    }
+    void addEdge(int fr, int to)
+    {
+        edge[tot] = (Edge){fr, to, head[fr]};
+        head[fr] = tot++;
+    }
+    void dfs(int now, int father)
+    { //dfs建树
+        fa[now][0] = father, depth[now] = depth[father] + 1;
+        for (int i = 1; (1 << i) <= depth[now]; i++)
+            fa[now][i] = fa[fa[now][i - 1]][i - 1];
+        for (int i = head[now]; ~i; i = edge[i].nxt)
+            if (edge[i].to != father)
+                dfs(edge[i].to, now);
+    }
+    void pre()
+    {
+        for (int i = 1; i <= n; i++)
+            lg[i] = lg[i - 1] + ((1 << lg[i - 1]) == i);
+        depth[0] = 0;
+        dfs(1, 0);
+    }
+    int getLCA(int u, int v)
+    {
+        if (depth[u] < depth[v])
+            swap(u, v);
+        while (depth[u] > depth[v])
+            u = fa[u][lg[depth[u] - depth[v]] - 1];
+        if (u == v)
+            return u;
+        for (int k = lg[depth[u]] - 1; k >= 0; k--)
+            if (fa[u][k] != fa[v][k])
+                u = fa[u][k], v = fa[v][k];
+        return fa[u][0];
+    }
+    void sum(int now)
+    {
+        for (int i = head[now]; ~i; i = edge[i].nxt)
+            if (edge[i].to != fa[now][0])
+            {
+                sum(edge[i].to);
+                chafen[now] += chafen[edge[i].to];
+            }
+        ans = max(ans, chafen[now]);
+    }
+    int main()
+    {
+        scanf("%d %d", &n, &k);
+        init();
+        for (int i = 1; i < n; i++)
+        {
+            int u, v;
+            scanf("%d %d", &u, &v);
+            addEdge(u, v);
+            addEdge(v, u);
+        }
+        pre();
+        for (int i = 1; i <= k; i++)
+        {
+            int u, v;
+            scanf("%d %d", &u, &v);
+            int lca = getLCA(u, v);
+            chafen[u]++, chafen[lca]--;
+            chafen[v]++, chafen[fa[lca][0]]--;
+        }
+        sum(1);
+        printf("%d", ans);
+        return 0;
+    }
+};
+/*
+LCA+差分数组
+计算树上节点的最大值——树上 点的差分
+例题：洛谷P3128  [USACO15DEC]Max Flow P
+时间复杂度为 O(n) 修改和查询都是O(n)
+*/
