@@ -5,21 +5,21 @@ const int maxn = 2e5+7;
 const int mod = 998244353;
 int n,k;
 int sum[maxn],maxsubtree[maxn],ansnode,maxsub;
-struct Node{
-	int depth,col;
-}node[maxn];
-int pre[maxn],after[maxn];
-vector<int> G[maxn];
-vector<int> S[maxn];
+int a[maxn],dis[maxn],vis[maxn],ans[maxn],S;
+int hdd;
+struct Edge{
+	int to,w;
+};
+vector<Edge> G[maxn];
 void dfs(int now,int fa){
 	sum[now] = 1;
 	maxsubtree[now] = -1;
 	for(int i=0;i<G[now].size();i++)
-	if(G[now][i] != fa)
+	if(G[now][i].to != fa)
 	{
-		dfs(G[now][i],now);
-		sum[now] += sum[G[now][i]];
-		maxsubtree[now] = max(maxsubtree[now],sum[G[now][i]]);
+		dfs(G[now][i].to,now);
+		sum[now] += sum[G[now][i].to];
+		maxsubtree[now] = max(maxsubtree[now],sum[G[now][i].to]);
 	}
 	maxsubtree[now] = max(maxsubtree[now],n-sum[now]);
 	if(maxsubtree[now] <= maxsub)
@@ -31,68 +31,50 @@ void dfs(int now,int fa){
 		maxsub = maxsubtree[now];
 	}
 }
-void dfs2(int now,int fa,int color){
-	node[now].col = color;
-	node[now].depth = node[fa].depth+1;
-	for(int i=0;i<G[now].size();i++)
-	if(G[now][i] != fa)
-		dfs2(G[now][i],now,color);
-}
-bool cmp(Node x,Node y){
-	return x.depth<y.depth;
-}
-int getans(int x,int color){
-	int l = 1, r = n;
-	while(l<r){
-		int mid = (l+r)>>1;
-		if(node[mid].depth<x)
-			l=mid+1;
-		else if(node[mid].depth>x)
-			r = mid-1;
-		else{
-			l = pre[mid],r = after[mid];
-			break;
-		}
+void getdis(int x,int len,int fa){
+	dis[++hdd] = a[x];
+	for(int i=0;i<G[x].size();i++)
+	if(G[x][i].to!=fa){
+		a[G[x][i].to] = len + G[x][i].w;
+		getdis(G[x][i].to,a[G[x][i].to],x);
 	}
-	if(l>=r)
-		return 0;
-	return (r-l+1) - (upper_bound(S[x].begin(),S[x].end(),r) - lower_bound(S[x].begin(),S[x].end(),l));
+}
+void solve(int s,int len,int w){
+	hdd =0 ;
+	a[s] = len;
+	getdis(s,len,0);
+	for(int i=1;i<=hdd;i++)
+		for(int j=1;j<=hdd;j++)
+		if(i!=j)
+		{
+			ans[dis[i]+dis[j]] += w;
+		}
+}
+void dfs2(int now,int fa,int color){
+	solve(now,0,1);
+	for(int i=0;i<G[now].size();i++)
+	if(G[now][i].to != fa){
+		solve(G[now][i].to,G[now][i].w,-1);
+		S = sum[now];
+		ansnode =0 ;
+		
+	}
 }
 int main(){
 	scanf("%d %d",&n,&k);
 	for(int i=1;i<n;i++)
 	{
-		int u,v;
-		scanf("%d %d",&u,&v);
-		G[u].push_back(v);
-		G[v].push_back(u);
+		int u,v,w;
+		scanf("%d %d %d",&u,&v,&w);
+		G[u].push_back((Edge){v,w});
+		G[v].push_back((Edge){u,w});
 	}
+	maxsub = 0x7fffffff;
 	dfs(1,0);
-	node[ansnode].depth = 0;
+	node[ansnode].dis = 0;
 	node[ansnode].col = 0;
-	for(int i=0;i<G[ansnode].size();i++)
-		dfs2(G[ansnode][i],ansnode,i+1);
-	sort(node+1,node+1+n,cmp);
-	for(int i=1;i<=n;i++){
-		S[node[i].col].push_back(i);
-		if(node[i].depth!=node[i-1].depth)
-			pre[i] = i;
-		else pre[i] = pre[i-1];
-	}
-	for(int i=n;i>=1;i--){
-		if(node[i].depth!=node[i+1].depth)
-				pre[i] = i;
-		else after[i] = after[i-1];
-	}
-	int ans=0;
-	for(int i=1;i<=n;i++)
-	if(node[i].col){
-		if(node[i].depth<k){
-			ans+=getans(k-node[i].depth,node[i].col);
-		}
-		else if(node[i].depth == k)
-			ans++;
-	}	
-	printf("%d",ans);
+	// printf("%d\n",ansnode);
+	dfs2(ansnode,0);
+	
 	return 0;
 }
