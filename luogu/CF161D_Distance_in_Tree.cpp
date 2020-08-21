@@ -1,15 +1,14 @@
 #include <bits/stdc++.h>
 #define ll long long
 using namespace std;
-const int maxn = 2e7+7;
+const int maxn = 2e5+7;
 const int mod = 998244353;
-int n,m;
-int head[maxn],tot=0;
+int n,m,k,ans=0;
+int head[maxn],tot;
 int sz[maxn],mp[maxn],sum,rt;
 bool vis[maxn];
 int dis[maxn],tmp[maxn],cnt=0;
 int jd[maxn];
-int k[maxn],ans[maxn];
 struct Edge{
 	int to,w,nxt;
 }edge[maxn];
@@ -52,17 +51,13 @@ void solve(int u){
         cnt = 0;
         dis[v] = edge[i].w;
         getdis(v, u);//统计v子树的所有节点到v的距离
-		for(int o =1;o<=m;o++){
-			for (int j = 0; j < cnt; j++)
-					if (k[o] >= tmp[j] && tmp[j] <1*1e7+1)
-						ans[o] += jd[k[o]-tmp[j]];//jd数组是一个桶数组，jd[i]为路径i的数量
-		}
+        for (int j = 0; j < cnt; j++)
+                if (k >= tmp[j])
+                    ans += jd[k-tmp[j]];//jd数组是一个桶数组，jd[i]为路径i的数量
         for (int j = 0; j < cnt; j++)
         {
-			if(tmp[j]<1e7+1){
-				que.push(tmp[j]);
-				jd[tmp[j]]++;//每找一个子树就压进去一批
-			}
+            que.push(tmp[j]);
+            jd[tmp[j]]++;//每找一个子树就压进去一批
         }
     }
     while(que.size())
@@ -90,36 +85,20 @@ void divide(int u)
 int main(){
 	// freopen(".in","r",stdin);
 	// freopen(".out","w",stdout);
-	scanf("%d %d",&n,&m);
+	scanf("%d %d",&n,&k);
 	fill(head,head+1+n,-1);
 	for(int i=1;i<n;i++)
 	{
 		int u,v,w;
-		scanf("%d %d %d",&u,&v,&w);
-		addEdge(u,v,w);
-		addEdge(v,u,w);
+		scanf("%d %d",&u,&v);
+		addEdge(u,v,1);
+		addEdge(v,u,1);
 	}
-	for(int i=1;i<=m;i++)
-		scanf("%d",&k[i]);
 	mp[0] = sum = n;
 	getrt(1, 0);//找整树的重心
-	getrt(rt, 0);//为啥是两遍？因为我们需要让siz数组正确（换根后siz数组就不正确了
+	// printf("YES\n");
+	getrt(rt, 0);//为啥是两遍？因为我们需要让siz数组正确（换根后siz数组就不正确了）
 	divide(rt);
-	for(int i=1;i<=m;i++)
-	if(ans[i]>0)
-		printf("AYE\n");
-	else
-		printf("NAY\n");
+	printf("%d",ans);
 	return 0;
 }
-/*
-9 10
-1 2 1
-1 3 2 
-2 5 2
-2 4 4
-3 6 3
-3 7 3
-4 8 4
-6 9 4
-*/
