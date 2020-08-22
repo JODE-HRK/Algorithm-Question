@@ -1,125 +1,143 @@
 #include <bits/stdc++.h>
-#define ll long long
 using namespace std;
-const int maxn = 2e7+7;
-const int mod = 998244353;
-int n,m;
-int head[maxn],tot=0;
-int sz[maxn],mp[maxn],sum,rt;
-bool vis[maxn];
-int dis[maxn],tmp[maxn],cnt=0;
-int jd[maxn];
-int k[maxn],ans[maxn];
-struct Edge{
-	int to,w,nxt;
-}edge[maxn];
-void addEdge(int fr,int to,int w){
-	edge[tot] = (Edge){to,w,head[fr]};
-	head[fr] = tot++;
-}
-void getrt(int now, int f)
-{
-    sz[now] = 1; mp[now] = 0;//siz数组数组树子树大小
-    for (int i = head[now]; ~i; i = edge[i].nxt)
-    {
-        int v = edge[i].to;
-        if (v == f || vis[v]) continue;
-        getrt(v, now);
-        sz[now] += sz[v];
-        if (sz[v] > mp[now]) mp[now] = sz[v];//mp数组是去掉u节点后，剩余部分的最大一部分。
-    }
-    mp[now] = max(mp[now], sum-sz[now]);//不要忘记上子树
-    if (mp[now] < mp[rt]) rt = now;//换根
-}
-
-void getdis(int u,int f){
-	tmp[cnt++] = dis[u];
-    for (int i = head[u]; ~i; i = edge[i].nxt)
-    {
-        int v = edge[i].to;
-        if (v == f || vis[v]) continue;
-        dis[v] = dis[u] + edge[i].w;
-        getdis(v, u);
-    }
-}
-
-void solve(int u){
-	queue<int> que;
-    for (int i = head[u]; ~i; i = edge[i].nxt)
-    {
-        int v = edge[i].to;
-        if (vis[v]) continue;
-        cnt = 0;
-        dis[v] = edge[i].w;
-        getdis(v, u);//统计v子树的所有节点到v的距离
-		for(int o =1;o<=m;o++){
-			for (int j = 0; j < cnt; j++)
-					if (k[o] >= tmp[j] && tmp[j] <1*1e7+1)
-						ans[o] += jd[k[o]-tmp[j]];//jd数组是一个桶数组，jd[i]为路径i的数量
-		}
-        for (int j = 0; j < cnt; j++)
-        {
-			if(tmp[j]<1e7+1){
-				que.push(tmp[j]);
-				jd[tmp[j]]++;//每找一个子树就压进去一批
-			}
+const int maxn=1e6+7;
+class Splay{
+    private:
+        int ch[maxn][2],f[maxn],size[maxn],cnt[maxn];
+        int sz,root;
+        inline bool get(int x){
+            return ch[f[x]][1]==x;
+        }
+        inline void update(int x){
+            if (x){
+                size[x]=cnt[x];
+                if (ch[x][0]) size[x]+=size[ch[x][0]];
+                if (ch[x][1]) size[x]+=size[ch[x][1]];
+            }
+        }
+        inline void rotate(int x){
+            int old=f[x],oldf=f[old],whichx=get(x);
+            ch[old][whichx]=ch[x][whichx^1]; f[ch[old][whichx]]=old;
+            ch[x][whichx^1]=old; f[old]=x;
+            f[x]=oldf;
+            if (oldf)
+                ch[oldf][ch[oldf][1]==old]=x;
+            update(old); update(x);
+        }
+        inline void splay(int x){
+            for (int fa;fa=f[x];rotate(x))
+              if (f[fa])
+                rotate((get(x)==get(fa))?fa:x);
+            root=x;
+        }
+    public:
+        int key[maxn];
+        inline void clear(int x){
+            ch[x][0]=ch[x][1]=f[x]=size[x]=cnt[x]=key[x]=0;
+        }
+        void insert(int x){
+        if (root==0){sz++; ch[sz][0]=ch[sz][1]=f[sz]=0; root=sz; size[sz]=cnt[sz]=1; key[sz]=x; return;}
+        int now=root,fa=0;
+        while(1){
+            if (x==key[now]){
+                cnt[now]++; update(now); update(fa); splay(now); break;
+            }
+            fa=now;
+            now=ch[now][key[now]<x];
+            if (now==0){
+                sz++;
+                ch[sz][0]=ch[sz][1]=0;
+                f[sz]=fa;
+                size[sz]=cnt[sz]=1;
+                ch[fa][key[fa]<x]=sz;
+                key[sz]=x;
+                update(fa);
+                splay(sz);
+                break;
+            }
         }
     }
-    while(que.size())
-    {
-        jd[que.front()]--;
-        que.pop();//以u为根的子树统计完毕，清空。
+    int find(int x){
+        int now=root,ans=0;
+        while(1){
+            if(now==0)
+                return 1;
+            if (x<key[now])
+              now=ch[now][0];
+            else{
+                ans+=(ch[now][0]?size[ch[now][0]]:0);
+                if (x==key[now]){
+                    splay(now); 
+                    return ans+1;
+                }
+                ans+=cnt[now];
+                now=ch[now][1];
+            }
+        }
     }
-}
-
-void divide(int u)
-{
-    jd[0] = vis[u] = 1;//vis[i],表示u节点已被选中
-    solve(u);//已u为根节点，统计路径信息
-    for (int i = head[u]; ~i; i = edge[i].nxt)
-    {
-        int v = edge[i].to;
-        if(vis[v]) continue;
-        mp[rt=0] = sum = sz[v];
-        getrt(v, 0);//找v子树的根节点
-        getrt(rt, 0);
-        divide(rt);//递归划分子树
+    int findx(int x){
+        int now=root;
+        while(1){
+            if (ch[now][0]&&x<=size[ch[now][0]])
+              now=ch[now][0];
+            else{
+                int temp=(ch[now][0]?size[ch[now][0]]:0)+cnt[now];
+                if (x<=temp) return key[now];
+                x-=temp; now=ch[now][1];
+            }
+        }
     }
-}
-
+    int pre(){
+        int now=ch[root][0];
+        while (ch[now][1]) now=ch[now][1];
+        return now;
+    }
+    int next(){
+        int now=ch[root][1];
+        while (ch[now][0]) now=ch[now][0];
+        return now;
+    }
+    void del(int x){
+        int whatever=find(x);
+        if (cnt[root]>1){cnt[root]--; update(root); return;}
+        if (!ch[root][0]&&!ch[root][1]) {clear(root); root=0; return;}
+        if (!ch[root][0]){
+            int oldroot=root; root=ch[root][1]; f[root]=0; clear(oldroot); return;
+        }
+        else if (!ch[root][1]){
+            int oldroot=root; root=ch[root][0]; f[root]=0; clear(oldroot); return;
+        }
+        int leftbig=pre(),oldroot=root;
+        splay(leftbig);
+        ch[root][1]=ch[oldroot][1];
+        f[ch[oldroot][1]]=root;
+        clear(oldroot);
+        update(root);
+    }
+};
+Splay F;
 int main(){
-	// freopen(".in","r",stdin);
-	// freopen(".out","w",stdout);
-	scanf("%d %d",&n,&m);
-	fill(head,head+1+n,-1);
-	for(int i=1;i<n;i++)
-	{
-		int u,v,w;
-		scanf("%d %d %d",&u,&v,&w);
-		addEdge(u,v,w);
-		addEdge(v,u,w);
-	}
-	for(int i=1;i<=m;i++)
-		scanf("%d",&k[i]);
-	mp[0] = sum = n;
-	getrt(1, 0);//找整树的重心
-	getrt(rt, 0);//为啥是两遍？因为我们需要让siz数组正确（换根后siz数组就不正确了
-	divide(rt);
-	for(int i=1;i<=m;i++)
-	if(ans[i]>0)
-		printf("AYE\n");
-	else
-		printf("NAY\n");
-	return 0;
+    int n,opt,x,m;
+    int zans=0;
+    scanf("%d %d",&n,&m);
+    for(int i=1;i<=n;i++)
+    {
+        scanf("%d",&x);
+        F.insert(x);
+    }
+    int lastans=0;
+    for (int i=1;i<=m;++i){
+        scanf("%d %d",&opt,&x);
+        x = x^lastans;
+        switch(opt){
+            case 1: F.insert(x); break;
+            case 2: F.del(x); break;
+            case 3: lastans = F.find(x), zans^=lastans; break;
+            case 4: lastans = F.findx(x), zans^=lastans; break;
+            case 5: F.insert(x); lastans = F.key[F.pre()], zans ^= lastans; F.del(x); break;
+            case 6: F.insert(x); lastans = F.key[F.next()], zans ^= lastans; F.del(x); break;
+        }
+    }
+    printf("%d",zans);
+return 0;
 }
-/*
-9 10
-1 2 1
-1 3 2 
-2 5 2
-2 4 4
-3 6 3
-3 7 3
-4 8 4
-6 9 4
-*/

@@ -3,7 +3,6 @@ using namespace std;
 int n,m;
 vector<int> G[1001];
 int g[1001][1001];
-int c[1001][1001];
 int r[1001];
 bool vis[1001];
 int sum[1001];
@@ -11,13 +10,9 @@ void dfs(int now){
     vis[now] = 1;
     if(sum[now])
         return;
-    int l = G[now].size();
-    sum[now] = l;
-    for(int i=0;i<l;i++){
+    for(int i=0;i<G[now].size();i++){
         dfs(G[now][i]);
-        for(int j=1;j<=n;j++)
-        if(g[G[now][i]][j] == 1 && g[now][j]!=1)
-            sum[now]++,g[now][j] = 1;
+        sum[now] += (sum[G[now][i]] + 1);
     }
 }
 int main(){
@@ -28,9 +23,9 @@ int main(){
     for(int i=1;i<=m;i++){
         int x,y;
         scanf("%d %d",&x,&y);
-        if(!g[y][x])
+        if(!g[x][y])
             G[y].push_back(x);
-        g[y][x]=1;
+        g[x][y]=1;
         r[x]++;
     }
     for(int i=1;i<=n;i++)
