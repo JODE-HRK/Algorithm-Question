@@ -260,17 +260,18 @@ struct MAST_LCA_route_minnum
 */
 struct shortest_path
 {
-    #define ll long long
-    #define pii pair<ll,int>
+#define ll long long
+#define pii pair<ll, int>
     int tot, head[maxn];
     ll dis[maxn];
     bool vis[maxn];
-    int n,m,s;
-    struct Edge{
+    int n, m, s;
+    struct Edge
+    {
         int to;
         ll w;
         int nxt;
-    }edge[maxn<<2];
+    } edge[maxn << 2];
     void init()
     {
         tot = 0;
@@ -280,45 +281,49 @@ struct shortest_path
     }
     void addEdge(int fr, int to, ll w)
     {
-        edge[tot].to = to,edge[tot].w = w,edge[tot].nxt = head[fr];
+        edge[tot].to = to, edge[tot].w = w, edge[tot].nxt = head[fr];
         head[fr] = tot++;
     }
-    priority_queue<pii,vector<pii>,greater<pii>> Q;
-    void dij(){
-        while(!Q.empty())
+    priority_queue<pii, vector<pii>, greater<pii>> Q;
+    void dij()
+    {
+        while (!Q.empty())
             Q.pop();
-        dis[s]=0;
-        Q.push(make_pair(0,s));
-        while(!Q.empty()){
+        dis[s] = 0;
+        Q.push(make_pair(0, s));
+        while (!Q.empty())
+        {
             pii now = Q.top();
             Q.pop();
-            if(vis[now.second])
-                continue; 
+            if (vis[now.second])
+                continue;
             int node = now.second;
-            vis[node]=1;
-            for(int i = head[node];~i;i=edge[i].nxt)
-            if(dis[edge[i].to] > dis[node] + edge[i].w){
-                dis[edge[i].to] = dis[node] + edge[i].w;
-                if(!vis[edge[i].to])
-                    Q.push(make_pair(dis[edge[i].to],edge[i].to));
-            }
+            vis[node] = 1;
+            for (int i = head[node]; ~i; i = edge[i].nxt)
+                if (dis[edge[i].to] > dis[node] + edge[i].w)
+                {
+                    dis[edge[i].to] = dis[node] + edge[i].w;
+                    if (!vis[edge[i].to])
+                        Q.push(make_pair(dis[edge[i].to], edge[i].to));
+                }
         }
     }
-    int main(){
-        scanf("%d %d %d",&n,&m,&s);
+    int main()
+    {
+        scanf("%d %d %d", &n, &m, &s);
         init();
-        for(int i=1;i<=m;i++)
+        for (int i = 1; i <= m; i++)
         {
-            int u,v;
+            int u, v;
             ll w;
-            scanf("%d %d %lld",&u,&v,&w);
-            addEdge(u,v,w);
-            addEdge(v,u,w);
+            scanf("%d %d %lld", &u, &v, &w);
+            addEdge(u, v, w);
+            addEdge(v, u, w);
         }
         dij();
-        for(int i=1;i<=n;i++)
-            printf("%lld ",dis[i]);
-    return 0;
+        for (int i = 1; i <= n; i++)
+            printf("%lld ", dis[i]);
+        return 0;
     }
 };
 /*
@@ -326,13 +331,15 @@ struct shortest_path
 同样dij
 本例是每条路径可重复使用路径
 */
-struct the_Second_Short_Path{
+struct the_Second_Short_Path
+{
     int n, m, s, head[maxn], vis[maxn], tot;
     int dist1[maxn], dist2[maxn];
-    struct Edge {
+    struct Edge
+    {
         int to, w, nxt;
-    }edge[maxn];
-    int x, y,cur;
+    } edge[maxn];
+    int x, y, cur;
     void add(int fr, int to, int w)
     {
         edge[tot].to = to;
@@ -343,8 +350,8 @@ struct the_Second_Short_Path{
     ll dij()
     {
         for (int i = 0; i < n; i++)
-            dist1[i] = dist2[i] = 1e9+7;
-        queue <int> q;
+            dist1[i] = dist2[i] = 1e9 + 7;
+        queue<int> q;
         q.push(0);
         dist1[0] = 0;
         vis[0] = 1;
@@ -355,31 +362,34 @@ struct the_Second_Short_Path{
             vis[cur] = 0;
             for (int i = head[cur]; ~i; i = edge[i].nxt)
             {
-                int to = edge[i].to;//以下三个if是关键，
-                if (dist1[to] > dist1[cur] + edge[i].w)//最短更新，次短变最短
+                int to = edge[i].to;                    //以下三个if是关键，
+                if (dist1[to] > dist1[cur] + edge[i].w) //最短更新，次短变最短
                 {
                     dist2[to] = dist1[to];
                     dist1[to] = dist1[cur] + edge[i].w;
-                    if (!vis[to]) vis[to] = 1, q.push(to);
+                    if (!vis[to])
+                        vis[to] = 1, q.push(to);
                 }
-                if (dist2[to] > dist2[cur] + edge[i].w)//次短由上一个点的次短更新，
+                if (dist2[to] > dist2[cur] + edge[i].w) //次短由上一个点的次短更新，
                 {
                     dist2[to] = dist2[cur] + edge[i].w;
-                    if (!vis[to]) vis[to] = 1, q.push(to);
+                    if (!vis[to])
+                        vis[to] = 1, q.push(to);
                 }
                 if (dist1[to] < dist1[cur] + edge[i].w && dist2[to] > dist1[cur] + edge[i].w)
                 {
                     dist2[to] = dist1[cur] + edge[i].w;
-                    if (!vis[to]) vis[to] = 1, q.push(to);
+                    if (!vis[to])
+                        vis[to] = 1, q.push(to);
                 }
             }
         }
-        return dist2[n-1];
+        return dist2[n - 1];
     }
     int main()
     {
         scanf("%d %d", &n, &m);
-        fill(head,head+1+n,-1);
+        fill(head, head + 1 + n, -1);
         for (int i = 0; i < m; i++)
         {
             int a, b, c;
@@ -536,165 +546,167 @@ struct DifferentialArray //On Node
 */
 struct Tree_chain_subdivision
 {
-    struct Edge{
-        int to,nxt;
-    }edge[maxn<<1];
-    struct node{
+    struct Edge
+    {
+        int to, nxt;
+    } edge[maxn << 1];
+    struct node
+    {
         int l, r, ls, rs;
         ll sum, lazy;
-    }tree[maxn<<2];
+    } tree[maxn << 2];
     ll mod;
-    int n, m, r, rt,  v[maxn], head[maxn];
+    int n, m, r, rt, v[maxn], head[maxn];
     int cnt, f[maxn], d[maxn], son[maxn], size[maxn], top[maxn], id[maxn], rk[maxn];
     //f记录每个节点的父亲，d记录深度，son记录该点的重儿子，size记录以该节点为根的子树的节点总数
     //top记录每个点所在重链的顶点，id记录在每个点的dfs序，rk记录dfs序对应的节点编号
     int opt, x, y, z;
-    void add(int fr,int to)
+    void add(int fr, int to)
     {
-        edge[cnt] = (Edge){ to, head[fr]};
-        head[fr]=cnt++;
+        edge[cnt] = (Edge){to, head[fr]};
+        head[fr] = cnt++;
     }
     void dfs1(int x)
     {
         // printf("%d\n", x);
-        size[x]=1,d[x]=d[f[x]]+1;
-        for(int v,i=head[x];~i;i=edge[i].nxt)
-            if((v=edge[i].to)!=f[x])
+        size[x] = 1, d[x] = d[f[x]] + 1;
+        for (int v, i = head[x]; ~i; i = edge[i].nxt)
+            if ((v = edge[i].to) != f[x])
             {
-                f[v]=x,dfs1(v),size[x]+=size[v];
-                if(size[son[x]]<size[v])
-                    son[x]=v;
+                f[v] = x, dfs1(v), size[x] += size[v];
+                if (size[son[x]] < size[v])
+                    son[x] = v;
             }
     }
-    void dfs2(int x,int tp)
+    void dfs2(int x, int tp)
     {
-        top[x]=tp,id[x]=++cnt,rk[cnt]=x;
-        if(son[x])
-            dfs2(son[x],tp);
-        for(int v,i=head[x];~i;i=edge[i].nxt)
-            if((v=edge[i].to)!=f[x]&&v!=son[x])
-                dfs2(v,v);
+        top[x] = tp, id[x] = ++cnt, rk[cnt] = x;
+        if (son[x])
+            dfs2(son[x], tp);
+        for (int v, i = head[x]; ~i; i = edge[i].nxt)
+            if ((v = edge[i].to) != f[x] && v != son[x])
+                dfs2(v, v);
     }
     inline void pushup(int x)
     {
-        tree[x].sum=(tree[tree[x].ls].sum+tree[tree[x].rs].sum)%mod;
+        tree[x].sum = (tree[tree[x].ls].sum + tree[tree[x].rs].sum) % mod;
     }
-    void build(int l,int r,int x)
+    void build(int l, int r, int x)
     {
-        if(l==r)
+        if (l == r)
         {
-            tree[x].sum=v[rk[l]],tree[x].l=tree[x].r=l;
+            tree[x].sum = v[rk[l]], tree[x].l = tree[x].r = l;
             return;
         }
-        int mid=l+r>>1;
-        tree[x].ls=cnt++,tree[x].rs=cnt++;
-        build(l,mid,tree[x].ls),build(mid+1,r,tree[x].rs);
-        tree[x].l=tree[tree[x].ls].l,tree[x].r=tree[tree[x].rs].r;
+        int mid = l + r >> 1;
+        tree[x].ls = cnt++, tree[x].rs = cnt++;
+        build(l, mid, tree[x].ls), build(mid + 1, r, tree[x].rs);
+        tree[x].l = tree[tree[x].ls].l, tree[x].r = tree[tree[x].rs].r;
         pushup(x);
     }
     inline int len(int x)
     {
-        return tree[x].r-tree[x].l+1;
+        return tree[x].r - tree[x].l + 1;
     }
     inline void pushdown(int x)
     {
-        if(tree[x].lazy)
+        if (tree[x].lazy)
         {
-            int ls=tree[x].ls,rs=tree[x].rs,lz=tree[x].lazy;
-            (tree[ls].lazy+=lz)%=mod,(tree[rs].lazy+=lz)%=mod;
-            (tree[ls].sum+=lz*len(ls))%=mod,(tree[rs].sum+=lz*len(rs))%=mod;
-            tree[x].lazy=0;
+            int ls = tree[x].ls, rs = tree[x].rs, lz = tree[x].lazy;
+            (tree[ls].lazy += lz) %= mod, (tree[rs].lazy += lz) %= mod;
+            (tree[ls].sum += lz * len(ls)) %= mod, (tree[rs].sum += lz * len(rs)) %= mod;
+            tree[x].lazy = 0;
         }
     }
-    void update(int l,int r,int c,int x)
+    void update(int l, int r, int c, int x)
     {
-        if(tree[x].l>=l&&tree[x].r<=r)
+        if (tree[x].l >= l && tree[x].r <= r)
         {
-            (tree[x].lazy+=c)%=mod,(tree[x].sum+=len(x)*c)%=mod;
+            (tree[x].lazy += c) %= mod, (tree[x].sum += len(x) * c) %= mod;
             return;
         }
         pushdown(x);
-        int mid=(tree[x].l+tree[x].r)>>1;
-        if(mid>=l)
-            update(l,r,c,tree[x].ls);
-        if(mid<r)
-            update(l,r,c,tree[x].rs);
+        int mid = (tree[x].l + tree[x].r) >> 1;
+        if (mid >= l)
+            update(l, r, c, tree[x].ls);
+        if (mid < r)
+            update(l, r, c, tree[x].rs);
         pushup(x);
     }
-    int query(int l,int r,int x)
+    int query(int l, int r, int x)
     {
-        if(tree[x].l>=l&&tree[x].r<=r)
+        if (tree[x].l >= l && tree[x].r <= r)
             return tree[x].sum;
         pushdown(x);
-        int mid=tree[x].l+tree[x].r>>1,tot=0;
-        if(mid>=l)
-            tot+=query(l,r,tree[x].ls);
-        if(mid<r)
-            tot+=query(l,r,tree[x].rs);
-        return tot%mod;
+        int mid = tree[x].l + tree[x].r >> 1, tot = 0;
+        if (mid >= l)
+            tot += query(l, r, tree[x].ls);
+        if (mid < r)
+            tot += query(l, r, tree[x].rs);
+        return tot % mod;
     }
-    inline int sum(int x,int y)
+    inline int sum(int x, int y)
     {
-        int ret=0;
-        while(top[x]!=top[y])
+        int ret = 0;
+        while (top[x] != top[y])
         {
-            if(d[top[x]]<d[top[y]])
-                swap(x,y);
-            (ret+=query(id[top[x]],id[x],rt))%=mod;
-            x=f[top[x]];
+            if (d[top[x]] < d[top[y]])
+                swap(x, y);
+            (ret += query(id[top[x]], id[x], rt)) %= mod;
+            x = f[top[x]];
         }
-        if(id[x]>id[y])
-            swap(x,y);
-        return (ret+query(id[x],id[y],rt))%mod;
+        if (id[x] > id[y])
+            swap(x, y);
+        return (ret + query(id[x], id[y], rt)) % mod;
     }
-    inline void updates(int x,int y,int c)//注意updates和update函数
+    inline void updates(int x, int y, int c) //注意updates和update函数
     {
-        while(top[x]!=top[y])
+        while (top[x] != top[y])
         {
-            if(d[top[x]]<d[top[y]])
-                swap(x,y);
-            update(id[top[x]],id[x],c,rt);
-            x=f[top[x]];
+            if (d[top[x]] < d[top[y]])
+                swap(x, y);
+            update(id[top[x]], id[x], c, rt);
+            x = f[top[x]];
         }
-        if(id[x]>id[y])
-            swap(x,y);
-        update(id[x],id[y],c,rt);
+        if (id[x] > id[y])
+            swap(x, y);
+        update(id[x], id[y], c, rt);
     }
     signed main()
     {
-        scanf("%d %d %d %lld",&n,&m,&r,&mod);
-        for(int i=1;i<=n;i++)
-            scanf("%d",&v[i]);
-        fill(head,head+1+n,-1);
-        for(int x,y,i=1;i<n;i++)
+        scanf("%d %d %d %lld", &n, &m, &r, &mod);
+        for (int i = 1; i <= n; i++)
+            scanf("%d", &v[i]);
+        fill(head, head + 1 + n, -1);
+        for (int x, y, i = 1; i < n; i++)
         {
-            scanf("%d %d",&x,&y);
-            add(x,y),add(y,x);
+            scanf("%d %d", &x, &y);
+            add(x, y), add(y, x);
         }
-        cnt=0,dfs1(r),dfs2(r,r);
-        cnt=0,build(1,n,rt=cnt++);
-        for(int i=1;i<=m;i++)
+        cnt = 0, dfs1(r), dfs2(r, r);
+        cnt = 0, build(1, n, rt = cnt++);
+        for (int i = 1; i <= m; i++)
         {
-            scanf("%d",&opt);
-            if(opt==1)
+            scanf("%d", &opt);
+            if (opt == 1)
             {
-                scanf("%d %d %d",&x,&y,&z);
-                updates(x,y,z);
+                scanf("%d %d %d", &x, &y, &z);
+                updates(x, y, z);
             }
-            else if(opt==2)
+            else if (opt == 2)
             {
-                scanf("%d %d",&x,&y);
-                printf("%lld\n",sum(x,y)%mod);
+                scanf("%d %d", &x, &y);
+                printf("%lld\n", sum(x, y) % mod);
             }
-            else if(opt==3)
+            else if (opt == 3)
             {
-                scanf("%d %d",&x,&y);
-                update(id[x],id[x]+size[x]-1,y,rt);
+                scanf("%d %d", &x, &y);
+                update(id[x], id[x] + size[x] - 1, y, rt);
             }
             else
             {
-                scanf("%d",&x);
-                printf("%lld\n",query(id[x],id[x]+size[x]-1,rt)%mod);
+                scanf("%d", &x);
+                printf("%lld\n", query(id[x], id[x] + size[x] - 1, rt) % mod);
             }
         }
         return 0;
@@ -706,53 +718,59 @@ struct Tree_chain_subdivision
 确定哪一个点的所有子树中的最大子树最小即可
 以POJ
 */
-struct Tree_Center_gravity{
+struct Tree_Center_gravity
+{
     int n;
     vector<int> G[maxn];
-    int sum[maxn],maxsubtree[maxn];
-    int maxsub,ansnode;
-    void init(){
+    int sum[maxn], maxsubtree[maxn];
+    int maxsub, ansnode;
+    void init()
+    {
         maxsub = 0x7fffffff;
         ansnode = 0x7fffffff;
-        for(int i=1;i<=n;i++)
+        for (int i = 1; i <= n; i++)
             G[i].clear();
     }
-    void dfs(int now,int fa){
+    void dfs(int now, int fa)
+    {
         sum[now] = 1;
         maxsubtree[now] = -1;
-        for(int i=0;i<G[now].size();i++)
-        if(G[now][i] != fa)
+        for (int i = 0; i < G[now].size(); i++)
+            if (G[now][i] != fa)
+            {
+                dfs(G[now][i], now);
+                sum[now] += sum[G[now][i]];
+                maxsubtree[now] = max(maxsubtree[now], sum[G[now][i]]);
+            }
+        maxsubtree[now] = max(maxsubtree[now], n - sum[now]);
+        if (maxsubtree[now] <= maxsub)
         {
-            dfs(G[now][i],now);
-            sum[now] += sum[G[now][i]];
-            maxsubtree[now] = max(maxsubtree[now],sum[G[now][i]]);
-        }
-        maxsubtree[now] = max(maxsubtree[now],n-sum[now]);
-        if(maxsubtree[now] <= maxsub)
-        {
-            if(maxsubtree[now] == maxsub)
-                ansnode = min(ansnode,now);
+            if (maxsubtree[now] == maxsub)
+                ansnode = min(ansnode, now);
             else
                 ansnode = now;
             maxsub = maxsubtree[now];
         }
     }
-    int main(){
+    int main()
+    {
         int T;
-        scanf("%d",&T);
-        while(T--){
-            scanf("%d",&n);
+        scanf("%d", &T);
+        while (T--)
+        {
+            scanf("%d", &n);
             init();
-            for(int i=1;i<n;i++){
-                int u,v;
-                scanf("%d %d",&u,&v);
+            for (int i = 1; i < n; i++)
+            {
+                int u, v;
+                scanf("%d %d", &u, &v);
                 G[u].push_back(v);
                 G[v].push_back(u);
             }
-            dfs(1,0);
-            printf("%d %d\n",ansnode,maxsub);
+            dfs(1, 0);
+            printf("%d %d\n", ansnode, maxsub);
         }
-    return 0;
+        return 0;
     }
 };
 /*
@@ -760,108 +778,179 @@ struct Tree_Center_gravity{
 本例以洛谷 点分治模板题为例 m个询问，问距离为k的点对有多少个,离线
 时间复杂度为 O(nlogn)
 */
-struct Point_Division{
-    int n,m;
-    int head[maxn],tot=0;
-    int sz[maxn],mp[maxn],sum,rt;
+struct Point_Division
+{
+    int n, m;
+    int head[maxn], tot = 0;
+    int sz[maxn], mp[maxn], sum, rt;
     bool vis[maxn];
-    int dis[maxn],tmp[maxn],cnt=0;
+    int dis[maxn], tmp[maxn], cnt = 0;
     int jd[maxn];
-    int k[maxn],ans[maxn];
-    struct Edge{
-        int to,w,nxt;
-    }edge[maxn];
-    void addEdge(int fr,int to,int w){
-        edge[tot] = (Edge){to,w,head[fr]};
+    int k[maxn], ans[maxn];
+    struct Edge
+    {
+        int to, w, nxt;
+    } edge[maxn];
+    void addEdge(int fr, int to, int w)
+    {
+        edge[tot] = (Edge){to, w, head[fr]};
         head[fr] = tot++;
     }
     void getrt(int now, int f)
     {
-        sz[now] = 1; mp[now] = 0;//siz数组数组树子树大小
+        sz[now] = 1;
+        mp[now] = 0; //siz数组数组树子树大小
         for (int i = head[now]; ~i; i = edge[i].nxt)
         {
             int v = edge[i].to;
-            if (v == f || vis[v]) continue;
+            if (v == f || vis[v])
+                continue;
             getrt(v, now);
             sz[now] += sz[v];
-            if (sz[v] > mp[now]) mp[now] = sz[v];//mp数组是去掉u节点后，剩余部分的最大一部分。
+            if (sz[v] > mp[now])
+                mp[now] = sz[v]; //mp数组是去掉u节点后，剩余部分的最大一部分。
         }
-        mp[now] = max(mp[now], sum-sz[now]);//不要忘记上子树
-        if (mp[now] < mp[rt]) rt = now;//换根
+        mp[now] = max(mp[now], sum - sz[now]); //不要忘记上子树
+        if (mp[now] < mp[rt])
+            rt = now; //换根
     }
-    void getdis(int u,int f){
+    void getdis(int u, int f)
+    {
         tmp[cnt++] = dis[u];
         for (int i = head[u]; ~i; i = edge[i].nxt)
         {
             int v = edge[i].to;
-            if (v == f || vis[v]) continue;
+            if (v == f || vis[v])
+                continue;
             dis[v] = dis[u] + edge[i].w;
             getdis(v, u);
         }
     }
-    void solve(int u){
+    void solve(int u)
+    {
         queue<int> que;
         for (int i = head[u]; ~i; i = edge[i].nxt)
         {
             int v = edge[i].to;
-            if (vis[v]) continue;
+            if (vis[v])
+                continue;
             cnt = 0;
             dis[v] = edge[i].w;
-            getdis(v, u);//统计v子树的所有节点到v的距离
-            for(int o =1;o<=m;o++){
+            getdis(v, u); //统计v子树的所有节点到v的距离
+            for (int o = 1; o <= m; o++)
+            {
                 for (int j = 0; j < cnt; j++)
-                        if (k[o] >= tmp[j] && tmp[j] <1*1e7+1) //防爆数组
-                            ans[o] += jd[k[o]-tmp[j]];//jd数组是一个桶数组，jd[i]为路径i的数量
+                    if (k[o] >= tmp[j] && tmp[j] < 1 * 1e7 + 1) //防爆数组
+                        ans[o] += jd[k[o] - tmp[j]];            //jd数组是一个桶数组，jd[i]为路径i的数量
             }
             for (int j = 0; j < cnt; j++)
             {
-                if(tmp[j]<1e7+1){//为防止爆数组，需要特判一下
+                if (tmp[j] < 1e7 + 1)
+                { //为防止爆数组，需要特判一下
                     que.push(tmp[j]);
-                    jd[tmp[j]]++;//每找一个子树就压进去一批
+                    jd[tmp[j]]++; //每找一个子树就压进去一批
                 }
             }
         }
-        while(que.size())
+        while (que.size())
         {
             jd[que.front()]--;
-            que.pop();//以u为根的子树统计完毕，清空。
+            que.pop(); //以u为根的子树统计完毕，清空。
         }
     }
     void divide(int u)
     {
-        jd[0] = vis[u] = 1;//vis[i],表示u节点已被选中
-        solve(u);//已u为根节点，统计路径信息
+        jd[0] = vis[u] = 1; //vis[i],表示u节点已被选中
+        solve(u);           //已u为根节点，统计路径信息
         for (int i = head[u]; ~i; i = edge[i].nxt)
         {
             int v = edge[i].to;
-            if(vis[v]) continue;
-            mp[rt=0] = sum = sz[v];
-            getrt(v, 0);//找v子树的根节点
+            if (vis[v])
+                continue;
+            mp[rt = 0] = sum = sz[v];
+            getrt(v, 0); //找v子树的根节点
             getrt(rt, 0);
-            divide(rt);//递归划分子树
+            divide(rt); //递归划分子树
         }
     }
-    int main(){
-        scanf("%d %d",&n,&m);
-        fill(head,head+1+n,-1);
-        for(int i=1;i<n;i++)
+    int main()
+    {
+        scanf("%d %d", &n, &m);
+        fill(head, head + 1 + n, -1);
+        for (int i = 1; i < n; i++)
         {
-            int u,v,w;
-            scanf("%d %d %d",&u,&v,&w);
-            addEdge(u,v,w);
-            addEdge(v,u,w);
+            int u, v, w;
+            scanf("%d %d %d", &u, &v, &w);
+            addEdge(u, v, w);
+            addEdge(v, u, w);
         }
-        for(int i=1;i<=m;i++)
-            scanf("%d",&k[i]);
+        for (int i = 1; i <= m; i++)
+            scanf("%d", &k[i]);
         mp[0] = sum = n;
-        getrt(1, 0);//找整树的重心
-        getrt(rt, 0);//为啥是两遍？因为我们需要让siz数组正确（换根后siz数组就不正确了
+        getrt(1, 0);  //找整树的重心
+        getrt(rt, 0); //为啥是两遍？因为我们需要让siz数组正确（换根后siz数组就不正确了
         divide(rt);
-        for(int i=1;i<=m;i++)
-        if(ans[i]>0)
-            printf("AYE\n");
-        else
-            printf("NAY\n");
+        for (int i = 1; i <= m; i++)
+            if (ans[i] > 0)
+                printf("AYE\n");
+            else
+                printf("NAY\n");
+        return 0;
+    }
+};
+/*
+有负权求树的直径
+O(n)时间复杂度
+*/
+struct diameter_of_Tree
+{
+    int n;
+    int head[maxn], tot = 0;
+    ll dis[maxn];
+    struct Edge
+    {
+        ll to, w, nxt;
+    } edge[maxn << 2];
+    ll maxdis, node;
+    ll ans = INT64_MIN;
+    void addEdge(ll fr, ll to, ll w)
+    {
+        edge[tot] = (Edge){to, w, head[fr]};
+        head[fr] = tot++;
+    }
+    void dfs(int now, int fa)
+    {
+        ll dis1 = INT64_MIN, dis2 = INT64_MIN;
+        for (ll i = head[now]; ~i; i = edge[i].nxt)
+            if (edge[i].to != fa)
+            {
+                dfs(edge[i].to, now);
+                ll d = dis[edge[i].to] + edge[i].w;
+                if (dis1 <= d)
+                {
+                    dis2 = dis1;
+                    dis1 = d;
+                }
+                else
+                    dis2 = max(dis2, d);
+                dis[now] = max(dis[now], dis[edge[i].to] + edge[i].w);
+            }
+        ans = max(ans, dis1 + dis2);
+    }
+    int main()
+    {
+        scanf("%d", &n);
+        fill(head, head + 1 + n, -1);
+        for (int i = 1; i < n; i++)
+        {
+            ll u, v, w;
+            scanf("%lld %lld %lld", &u, &v, &w);
+            addEdge(u, v, w);
+            addEdge(v, u, w);
+        }
+        dis[1] = 0;
+        dfs(1, 0);
+        printf("%lld\n", ans);
         return 0;
     }
 };

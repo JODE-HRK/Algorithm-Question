@@ -1,143 +1,148 @@
 #include <bits/stdc++.h>
+#define ll long long
+#define maxn 200007
+#define inf 2000000000
+#define setIO(s) freopen(s ".in", "r", stdin)
+
 using namespace std;
-const int maxn=1e6+7;
-class Splay{
-    private:
-        int ch[maxn][2],f[maxn],size[maxn],cnt[maxn];
-        int sz,root;
-        inline bool get(int x){
-            return ch[f[x]][1]==x;
-        }
-        inline void update(int x){
-            if (x){
-                size[x]=cnt[x];
-                if (ch[x][0]) size[x]+=size[ch[x][0]];
-                if (ch[x][1]) size[x]+=size[ch[x][1]];
-            }
-        }
-        inline void rotate(int x){
-            int old=f[x],oldf=f[old],whichx=get(x);
-            ch[old][whichx]=ch[x][whichx^1]; f[ch[old][whichx]]=old;
-            ch[x][whichx^1]=old; f[old]=x;
-            f[x]=oldf;
-            if (oldf)
-                ch[oldf][ch[oldf][1]==old]=x;
-            update(old); update(x);
-        }
-        inline void splay(int x){
-            for (int fa;fa=f[x];rotate(x))
-              if (f[fa])
-                rotate((get(x)==get(fa))?fa:x);
-            root=x;
-        }
-    public:
-        int key[maxn];
-        inline void clear(int x){
-            ch[x][0]=ch[x][1]=f[x]=size[x]=cnt[x]=key[x]=0;
-        }
-        void insert(int x){
-        if (root==0){sz++; ch[sz][0]=ch[sz][1]=f[sz]=0; root=sz; size[sz]=cnt[sz]=1; key[sz]=x; return;}
-        int now=root,fa=0;
-        while(1){
-            if (x==key[now]){
-                cnt[now]++; update(now); update(fa); splay(now); break;
-            }
-            fa=now;
-            now=ch[now][key[now]<x];
-            if (now==0){
-                sz++;
-                ch[sz][0]=ch[sz][1]=0;
-                f[sz]=fa;
-                size[sz]=cnt[sz]=1;
-                ch[fa][key[fa]<x]=sz;
-                key[sz]=x;
-                update(fa);
-                splay(sz);
-                break;
-            }
-        }
-    }
-    int find(int x){
-        int now=root,ans=0;
-        while(1){
-            if(now==0)
-                return 1;
-            if (x<key[now])
-              now=ch[now][0];
-            else{
-                ans+=(ch[now][0]?size[ch[now][0]]:0);
-                if (x==key[now]){
-                    splay(now); 
-                    return ans+1;
-                }
-                ans+=cnt[now];
-                now=ch[now][1];
-            }
-        }
-    }
-    int findx(int x){
-        int now=root;
-        while(1){
-            if (ch[now][0]&&x<=size[ch[now][0]])
-              now=ch[now][0];
-            else{
-                int temp=(ch[now][0]?size[ch[now][0]]:0)+cnt[now];
-                if (x<=temp) return key[now];
-                x-=temp; now=ch[now][1];
-            }
-        }
-    }
-    int pre(){
-        int now=ch[root][0];
-        while (ch[now][1]) now=ch[now][1];
-        return now;
-    }
-    int next(){
-        int now=ch[root][1];
-        while (ch[now][0]) now=ch[now][0];
-        return now;
-    }
-    void del(int x){
-        int whatever=find(x);
-        if (cnt[root]>1){cnt[root]--; update(root); return;}
-        if (!ch[root][0]&&!ch[root][1]) {clear(root); root=0; return;}
-        if (!ch[root][0]){
-            int oldroot=root; root=ch[root][1]; f[root]=0; clear(oldroot); return;
-        }
-        else if (!ch[root][1]){
-            int oldroot=root; root=ch[root][0]; f[root]=0; clear(oldroot); return;
-        }
-        int leftbig=pre(),oldroot=root;
-        splay(leftbig);
-        ch[root][1]=ch[oldroot][1];
-        f[ch[oldroot][1]]=root;
-        clear(oldroot);
-        update(root);
-    }
-};
-Splay F;
-int main(){
-    int n,opt,x,m;
-    int zans=0;
-    scanf("%d %d",&n,&m);
-    for(int i=1;i<=n;i++)
+
+int val[maxn], n, m, root;
+
+struct SPLAY_TREE
+{
+#define lson s[x].ch[0]
+#define rson s[x].ch[1]
+    struct data
     {
-        scanf("%d",&x);
-        F.insert(x);
+        int v, size, ch[2], f;
+    } s[maxn * 10];
+    int tot;
+    inline int newnode() { return ++tot; }
+    inline int get(int x) { return s[s[x].f].ch[1] == x; }
+    inline void pushup(int x) { s[x].size = s[lson].size + s[rson].size + 1; }
+    inline void rotate(int x)
+    {
+        int old = s[x].f, fold = s[old].f, which = get(x);
+        s[old].ch[which] = s[x].ch[which ^ 1];
+        if (s[old].ch[which])
+            s[s[old].ch[which]].f = old;
+        s[x].ch[which ^ 1] = old, s[old].f = x, s[x].f = fold;
+        if (fold)
+            s[fold].ch[s[fold].ch[1] == old] = x;
+        pushup(old), pushup(x);
     }
-    int lastans=0;
-    for (int i=1;i<=m;++i){
-        scanf("%d %d",&opt,&x);
-        x = x^lastans;
-        switch(opt){
-            case 1: F.insert(x); break;
-            case 2: F.del(x); break;
-            case 3: lastans = F.find(x), zans^=lastans; break;
-            case 4: lastans = F.findx(x), zans^=lastans; break;
-            case 5: F.insert(x); lastans = F.key[F.pre()], zans ^= lastans; F.del(x); break;
-            case 6: F.insert(x); lastans = F.key[F.next()], zans ^= lastans; F.del(x); break;
+    void splay(int x, int &tar)
+    {
+        for (int u = s[tar].f, fa; (fa = s[x].f) != u; rotate(x))
+            if (s[fa].f != u)
+                rotate(get(fa) == get(x) ? fa : x);
+        tar = x;
+    }
+    void build(int l, int r, int &x)
+    { //如果一开始有数据，就建树，并且返回x（根）
+        x = newnode();
+        int mid = (l + r) >> 1;
+        s[x].v = val[mid];
+        if (mid > l)
+            build(l, mid - 1, lson), s[lson].f = x;
+        if (r > mid)
+            build(mid + 1, r, rson), s[rson].f = x;
+        pushup(x);
+    }
+    void ins(int &x, int fa, int v)
+    {
+        if (!x)
+            x = newnode(), s[x].f = fa, s[x].v = v;
+        else
+            ins(s[x].ch[v > s[x].v], x, v);
+        pushup(x);
+    }
+    int find(int x, int v)
+    {
+        if (s[x].v == v)
+            return x;
+        else
+            return find(s[x].ch[v > s[x].v], v);
+    }
+    int getpre(int x, int v)
+    {
+        if (!x)
+            return 0;
+        if (s[x].v < v)
+        {
+            int a = x, b = getpre(rson, v);
+            return b == 0 ? a : b;
         }
+        else
+            return getpre(lson, v);
     }
-    printf("%d",zans);
-return 0;
+    int getaft(int x, int v)
+    {
+        if (!x)
+            return 0;
+        if (s[x].v > v)
+        {
+            int a = x, b = getaft(lson, v);
+            return b == 0 ? a : b;
+        }
+        else
+            return getaft(rson, v);
+    }
+    void del(int v)
+    {
+        int x = find(root, v), l, r;
+        splay(x, root), l = lson, r = rson;
+        while (s[l].ch[1])
+            l = s[l].ch[1];
+        splay(l, s[x].ch[0]);
+        s[r].f = l, s[l].f = 0, s[l].ch[1] = r, pushup(l), root = l;
+    }
+    int getrank(int v)
+    {
+        int x = getpre(root, v);
+        splay(x, root);
+        return s[lson].size + 1;
+    }
+    int getnum(int x, int kth)
+    {
+        if (kth == s[lson].size + 1)
+            return x;
+        else if (kth <= s[lson].size)
+            return getnum(lson, kth);
+        else
+            return getnum(rson, kth - s[lson].size - 1);
+    }
+} bst;
+
+int main()
+{
+    scanf("%d%d", &n, &m);
+    for (int i = 1; i <= n; ++i)
+        scanf("%d", &val[i]), bst;
+    sort(val + 1, val + 1 + n);
+    val[0] = -inf, val[1 + n] = inf;
+
+    bst.build(0, 1 + n, root);
+    int lastans = 0, op, x, y, ans = 0;
+    for (int i = 1; i <= m; ++i)
+    {
+        scanf("%d %d", &op, &x);
+        x ^= lastans, y = 0;
+        if (op == 1)
+            bst.ins(root, 0, x), y = bst.tot;
+        else if (op == 2)
+            bst.del(x);
+        else if (op == 3)
+            lastans = bst.getrank(x), ans ^= lastans;
+        else if (op == 4)
+            y = bst.getnum(root, x + 1), lastans = bst.s[y].v, ans ^= lastans;
+        else if (op == 5)
+            y = bst.getpre(root, x), lastans = bst.s[y].v, ans ^= lastans;
+        else if (op == 6)
+            y = bst.getaft(root, x), lastans = bst.s[y].v, ans ^= lastans;
+        if (y && (i % 10 == 0)) //10次操作后splay旋转一下
+            bst.splay(y, root);
+    }
+    printf("%d\n", ans);
+    return 0;
 }
