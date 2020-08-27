@@ -4,7 +4,7 @@
  * @Author: JODEHRK
  * @Date: 2020-08-18 23:21:16
  * @LastEditors: JODEHRK
- * @LastEditTime: 2020-08-27 12:32:45
+ * @LastEditTime: 2020-08-27 12:34:38
  */
 /*
 倍增求k代祖先
