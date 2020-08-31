@@ -954,3 +954,83 @@ struct diameter_of_Tree
         return 0;
     }
 };
+/*
+最小费用最大流
+期望时间复杂度为：O(A*E*K)，其中A为所有顶点进队列的平均次数，可以证明A一般小于等于2。
+*/
+struct MinCostMaxFlow
+{
+    int n, m, s, t, tot = 0;
+    int head[maxn];
+    int ansflow, anscost;
+    int flow[maxn], cost[maxn], pre[maxn], eid[maxn];
+    struct Edge
+    {
+        int to, flow, cost, nxt;
+    } edge[maxn << 1];
+    bool vis[maxn];
+    void addEdge(int u, int v, int f, int c)
+    {
+        edge[tot] = (Edge){v, f, c, head[u]};
+        head[u] = tot++;
+    }
+    int spfa()
+    {
+        fill(cost, cost + n + 1, 0x7fffffff);
+        fill(flow, flow + 1 + n, 0x7fffffff);
+        // fill(vis, vis + 1 + n, 0);SPFA无需重制，在此处查询流
+        queue<int> Q;
+        while (!Q.empty())
+            Q.pop();
+        Q.push(s);
+        cost[s] = 0, pre[t] = 0;
+        while (!Q.empty())
+        {
+            int now = Q.front();
+            Q.pop();
+            vis[now] = 0;
+            for (int i = head[now]; ~i; i = edge[i].nxt)
+            {
+                if (edge[i].flow && cost[now] + edge[i].cost < cost[edge[i].to])
+                {
+                    cost[edge[i].to] = cost[now] + edge[i].cost;
+                    pre[edge[i].to] = now;
+                    eid[edge[i].to] = i;
+                    flow[edge[i].to] = min(flow[now], edge[i].flow);
+                    if (!vis[edge[i].to])
+                        Q.push(edge[i].to), vis[edge[i].to] = 1;
+                }
+            }
+        }
+        return pre[t];
+    }
+    void MCMF()
+    {
+        ansflow = anscost = 0;
+        while (spfa())
+        {
+            ansflow += flow[t];
+            anscost += (flow[t] * cost[t]);
+            for (int i = t; i != s; i = pre[i]) //根据pre记录回退更新边
+            {
+                edge[eid[i]].flow -= flow[t];
+                edge[eid[i] ^ 1].flow += flow[t];
+            }
+        }
+    }
+    int main()
+    {
+        scanf("%d %d %d %d", &n, &m, &s, &t);
+        fill(head, head + 1 + n, -1);
+        for (int i = 1; i <= m; i++)
+        {
+            int u, v, f, c;
+            scanf("%d %d %d %d", &u, &v, &f, &c);
+            addEdge(u, v, f, c);
+            addEdge(v, u, 0, -c);
+        }
+        MCMF();
+        printf("%d %d", ansflow, anscost);
+        return 0;
+    }
+};
