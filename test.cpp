@@ -1,154 +1,80 @@
-/*
- * @Descripttion: 
- * @version: 
- * @Author: JODEHRK
- * @Date: 2020-08-27 12:40:47
- * @LastEditors: JODEHRK
- * @LastEditTime: 2020-08-29 09:36:18
- */
 #include <bits/stdc++.h>
-<<<<<<< HEAD
 #define ll long long
 using namespace std;
-const ll maxn = 3e7 + 7;
-ll n, sa, sb, sc, sd, mod;
-ll a[maxn], b[maxn], ans = 0;
-ll f(ll x)
-{
-	return (sa * x % mod * x % mod * x % mod + sb * x % mod * x % mod + sc * x % mod + sd) % mod;
-=======
-using namespace std;
-const int maxn = 1e5 + 7;
-int n, m, u, v, k;
-struct Tree
-{
-	int l, r, s;
-} tree[maxn << 5];
-vector<int> G[maxn];
-int a[maxn], b[maxn];
-int head[maxn], tot, lg[maxn], fa[maxn][22], depth[maxn], cnt, root[maxn], num;
+const int maxn = 2e5 + 7;
+int n, m;
+int head[maxn], tot;
 struct Edge
 {
-	int fr, to, w, nxt;
+	int to, val, nxt;
 } edge[maxn << 1];
-void init()
+vector<ll> G[maxn];
+ll cost[maxn];
+ll cnt, dis;
+
+void add(int x, int y, int z)
 {
-	tot = cnt = 0;
-	fill(head, head + 1 + n, -1);
+	edge[tot] = (Edge){y, z, head[x]};
+	head[x] = tot++;
 }
-void addEdge(int fr, int to, int w)
+
+void dfs(int now, int fa, int dep)
 {
-	edge[tot] = (Edge){fr, to, w, head[fr]};
-	head[fr] = tot++;
-}
-int insert(int l, int r, int node, int val)
-{
-	int newnode = ++cnt;
-	tree[newnode] = tree[node];
-	tree[newnode].s++;
-	if (l == r)
-		return newnode;
-	int mid = (l + r) >> 1;
-	if (val <= mid)
-		tree[newnode].l = insert(l, mid, tree[node].l, val);
-	else
-		tree[newnode].r = insert(mid + 1, r, tree[node].r, val);
-	return newnode;
-}
-void dfs(int now, int father)
-{ //dfs建树
-	fa[now][0] = father, depth[now] = depth[father] + 1;
-	// printf("REWS\n");
-	root[now] = insert(1, num, root[fa[now][0]], a[now]);
-	for (int i = 1; (1 << i) <= depth[now]; i++)
-		fa[now][i] = fa[fa[now][i - 1]][i - 1];
+	if (now == n)
+	{
+		dis = dep;
+		return;
+	}
 	for (int i = head[now]; ~i; i = edge[i].nxt)
-		if (edge[i].to != father)
-			dfs(edge[i].to, now);
-}
-void pre()
-{
-	for (int i = 1; i <= n; i++)
-		lg[i] = lg[i - 1] + ((1 << lg[i - 1]) == i);
-	depth[0] = 0;
-	dfs(1, 0);
-}
-int getans(int u, int v)
-{
-	if (depth[u] < depth[v])
-		swap(u, v);
-	while (depth[u] > depth[v])
-		u = fa[u][lg[depth[u] - depth[v]] - 1];
-	if (u == v)
-		return u;
-	for (int k = lg[depth[u]] - 1; k >= 0; k--)
-		if (fa[u][k] != fa[v][k])
-			u = fa[u][k], v = fa[v][k];
-	return fa[u][0];
-}
-int build(int l, int r)
-{
-	int newnode = ++cnt;
-	tree[newnode].s = 0;
-	if (l == r)
-		return newnode;
-	int mid = (l + r) >> 1;
-	tree[newnode].l = build(l, mid);
-	tree[newnode].r = build(mid + 1, r);
-	return newnode;
-}
-int fd(int l, int r, int node1, int node2, int node3, int node4, int nk)
-{
-	if (l == r)
-		return l;
-	int sum = tree[tree[node1].l].s + tree[tree[node2].l].s - tree[tree[node3].l].s - tree[tree[node4].l].s;
-	int mid = (l + r) >> 1;
-	if (sum >= nk)
-		return fd(l, mid, tree[node1].l, tree[node2].l, tree[node3].l, tree[node4].l, nk);
-	else
-		return fd(mid + 1, r, tree[node1].r, tree[node2].r, tree[node3].r, tree[node4].r, nk - sum);
->>>>>>> 8bac59c33f0fb0ec1bbd686f9b8446d6abcbf7e8
+	{
+		int v = edge[i].to, w = edge[i].val;
+		if (v == fa)
+			continue;
+		G[cnt].push_back(w);
+		dfs(v, now, dep + 1);
+	}
 }
 
 int main()
 {
-<<<<<<< HEAD
-	a[0] = 0;
-	scanf("%lld %lld %lld %lld %lld %lld %lld", &n, &sa, &sb, &sc, &sd, &a[1], &mod);
-	// printf("%lld %lld %lld %lld %lld %lld %lld\n", n, sa, sb, sc, sd, a[1], mod);
-	ll maxh = a[1];
-	for (ll i = 2; i <= n; i++)
-	{
-		a[i] = (f(a[i - 1]) + f(a[i - 2])) % mod;
-		ans = max(ans, maxh - a[i]);
-		maxh = max(maxh, a[i]);
-	}
-	// for (int i = 1; i <= n; i++)
-	// 	printf("%lld ", a[i]);
-	printf("%lld", ans / 2 + ans % 2);
-=======
 	scanf("%d %d", &n, &m);
-	init();
-	for (int i = 1; i <= n; i++)
-		scanf("%d", &a[i]), b[i] = a[i];
-	sort(b + 1, b + 1 + n);
-	num = unique(b + 1, b + 1 + n) - b - 1;
-	for (int i = 1; i <= n; ++i)
-		a[i] = lower_bound(b + 1, b + 1 + num, a[i]) - b;
-	for (int i = 1; i < n; i++)
-	{
-		scanf("%d %d", &u, &v);
-		addEdge(u, v, 1);
-		addEdge(v, u, 1);
-	}
-	root[0] = build(1, num);
-	pre();
+	fill(head, head + 1 + n, -1);
+	ll sum = 0;
 	for (int i = 1; i <= m; i++)
 	{
-		scanf("%d %d %d", &u, &v, &k);
-		int lca = getans(u, v);
-		printf("%d\n", b[fd(1, num, root[u], root[v], root[lca], root[fa[lca][0]], k)]);
+		int x, y, z;
+		scanf("%d %d %d", &x, &y, &z);
+		add(x, y, z);
+		sum += z;
 	}
->>>>>>> 8bac59c33f0fb0ec1bbd686f9b8446d6abcbf7e8
+
+	cnt = 0;
+	for (int i = head[1]; ~i; i = edge[i].nxt)
+	{
+		int v = edge[i].to;
+		cnt++;
+		G[cnt].push_back(edge[i].val);
+		dfs(v, 1, 1);
+		sort(G[cnt].begin(), G[cnt].end()); //逐步补满时好算一点
+		int k = 0;
+		while (k < dis - 1)
+		{
+			cost[k + 1] += G[cnt][k + 1] - G[cnt][k]; //每一层补满需要多少
+			k++;
+		}
+		sum -= G[cnt][0] * dis; //最基本的肯定要补满
+	}
+	// printf("%d\n", dis);
+	ll ans = 0;
+	for (int i = 1; i < dis; i++)
+	{
+		if (sum < dis) //无法继续补了就退出
+			break;
+		ll tmp = min(1ll * (sum / dis), cost[i]); //换算成第i层补满需要多少
+		ans += tmp * i;
+		sum -= tmp * dis;
+	}
+	// printf("YES\n");
+	printf("%lld\n", ans);
 	return 0;
 }
