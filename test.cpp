@@ -7,6 +7,16 @@
  * @LastEditTime: 2020-08-29 09:36:18
  */
 #include <bits/stdc++.h>
+<<<<<<< HEAD
+#define ll long long
+using namespace std;
+const ll maxn = 3e7 + 7;
+ll n, sa, sb, sc, sd, mod;
+ll a[maxn], b[maxn], ans = 0;
+ll f(ll x)
+{
+	return (sa * x % mod * x % mod * x % mod + sb * x % mod * x % mod + sc * x % mod + sd) % mod;
+=======
 using namespace std;
 const int maxn = 1e5 + 7;
 int n, m, u, v, k;
@@ -97,9 +107,26 @@ int fd(int l, int r, int node1, int node2, int node3, int node4, int nk)
 		return fd(l, mid, tree[node1].l, tree[node2].l, tree[node3].l, tree[node4].l, nk);
 	else
 		return fd(mid + 1, r, tree[node1].r, tree[node2].r, tree[node3].r, tree[node4].r, nk - sum);
+>>>>>>> 8bac59c33f0fb0ec1bbd686f9b8446d6abcbf7e8
 }
+
 int main()
 {
+<<<<<<< HEAD
+	a[0] = 0;
+	scanf("%lld %lld %lld %lld %lld %lld %lld", &n, &sa, &sb, &sc, &sd, &a[1], &mod);
+	// printf("%lld %lld %lld %lld %lld %lld %lld\n", n, sa, sb, sc, sd, a[1], mod);
+	ll maxh = a[1];
+	for (ll i = 2; i <= n; i++)
+	{
+		a[i] = (f(a[i - 1]) + f(a[i - 2])) % mod;
+		ans = max(ans, maxh - a[i]);
+		maxh = max(maxh, a[i]);
+	}
+	// for (int i = 1; i <= n; i++)
+	// 	printf("%lld ", a[i]);
+	printf("%lld", ans / 2 + ans % 2);
+=======
 	scanf("%d %d", &n, &m);
 	init();
 	for (int i = 1; i <= n; i++)
@@ -122,5 +149,6 @@ int main()
 		int lca = getans(u, v);
 		printf("%d\n", b[fd(1, num, root[u], root[v], root[lca], root[fa[lca][0]], k)]);
 	}
+>>>>>>> 8bac59c33f0fb0ec1bbd686f9b8446d6abcbf7e8
 	return 0;
 }
