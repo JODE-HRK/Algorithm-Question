@@ -1,73 +1,174 @@
-/*
- * @Descripttion: 
- * @version: 
- * @Author: JODEHRK
- * @Date: 2020-08-31 20:40:32
- * @LastEditors: JODEHRK
- * @LastEditTime: 2020-08-31 21:20:01
- */
-#include <bits/stdc++.h>
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <algorithm>
+#include <map>
+#include <tr1/unordered_map>
+#include <cmath>
+
 using namespace std;
-const int maxn = 3e6 + 7;
-int n, m, last[maxn], root[maxn], cnt = 0;
-struct Tree
+const int INF = 0x3f3f3f3f;
+const int MAXN = 4e5 + 5;
+
+int gc()
 {
-    int l, r, s;
-} tree[maxn * 32];
-int build(int l, int r)
-{
-    int newnode = ++cnt;
-    tree[newnode].s = 0;
-    if (l == r)
-        return newnode;
-    int mid = (l + r) >> 1;
-    tree[newnode].l = build(l, mid);
-    tree[newnode].r = build(mid + 1, r);
+    static char buf[100000], *p1 = buf, *p2 = buf;
+    return (p1 == p2 && (p2 = (p1 = buf) + fread(buf, 1, 100000, stdin), p1 == p2)) ? EOF : *p1++;
+    //return getchar();
 }
-int insert(int pos, int node, int l, int r)
+
+int geti()
 {
-    int newnode = ++cnt;
-    tree[newnode] = tree[node];
-    if (l == r)
-    {
-        tree[newnode].s++;
-        return newnode;
-    }
-    int mid = (l + r) >> 1;
-    if (pos <= mid)
-        tree[newnode].l = insert(pos, tree[node].l, l, mid);
-    else
-        tree[newnode].r = insert(pos, tree[node].r, mid + 1, r);
-    tree[newnode].s = tree[tree[newnode].l].s + tree[tree[newnode].r].s;
-    return newnode;
+    char ch = gc();
+    int f = 1, x = 0;
+    while (ch < '0' || ch > '9')
+        f = (ch == '-' ? -1 : 1), ch = gc();
+    while (ch >= '0' && ch <= '9')
+        x = x * 10 + ch - '0', ch = gc();
+    return f * x;
 }
-int query(int L, int R, int l, int r, int node1, int node2)
+
+void wri(int x)
 {
-    if (r < L || l > R)
-        return 0;
-    if (l >= L && r <= R)
-        return tree[node2].s - tree[node1].s;
-    int mid = (l + r) >> 1;
-    int ans = query(L, R, l, mid, tree[node1].l, tree[node2].l) + query(L, R, mid + 1, r, tree[node1].r, tree[node2].r);
-    return ans;
+    if (x > 9)
+        wri(x / 10);
+    putchar(x % 10 + '0');
 }
-int main()
+
+int n, m, N;
+int a[MAXN];
+int b[MAXN];
+tr1::unordered_map<int, int> ref;
+
+struct Query
 {
-    scanf("%d", &n);
-    root[0] = build(1, n);
+    int l, r, id;
+};
+
+Query qs[MAXN];
+int ans[MAXN];
+int min1[MAXN], min2[MAXN], max1[MAXN], max2[MAXN], min3[MAXN], max3[MAXN];
+int res1, res2, res3;
+int block, blo[MAXN];
+
+int Comp(Query a, Query b)
+{
+    if (blo[a.l] != blo[b.l])
+        return a.l < b.l;
+    return a.r < b.r;
+}
+
+void Prework()
+{
+    for (int i = 1; i <= n; i++)
+        b[i] = a[i];
+    sort(b + 1, b + n + 1);
     for (int i = 1; i <= n; i++)
     {
-        int x;
-        scanf("%d", &x);
-        root[i] = insert(last[x] + 1, root[i - 1], 1, n);
-        last[x] = i;
+        if (!ref[b[i]])
+            ref[b[i]] = ++N;
     }
-    scanf("%d", &m);
+    for (int i = 1; i <= n; i++)
+        b[i] = ref[a[i]];
+    block = sqrt(n);
+    for (int i = 1; i <= n; i++)
+        blo[i] = (i - 1) / block + 1;
+}
+
+void AddR(int i)
+{
+    min2[b[i]] = min1[b[i]] = min(min1[b[i]], i);
+    max2[b[i]] = max1[b[i]] = max(max1[b[i]], i);
+    res2 = res1 = max(res1, max1[b[i]] - min1[b[i]]);
+}
+
+void AddL(int i)
+{
+    min2[b[i]] = min(min2[b[i]], i);
+    max2[b[i]] = max(max2[b[i]], i);
+    res2 = max(res2, max2[b[i]] - min2[b[i]]);
+}
+
+void Del(int i)
+{
+    min2[b[i]] = min1[b[i]];
+    max2[b[i]] = max1[b[i]];
+    res2 = res1;
+}
+
+void CaptainMo()
+{
+    int nl = 1, nr = 0, nb = 0, nbr = 0;
+    memset(min1, 0x3f, sizeof(min1));
+    memset(min2, 0x3f, sizeof(min2));
+    memset(min3, 0x3f, sizeof(min3));
+    sort(qs + 1, qs + m + 1, Comp);
     for (int i = 1; i <= m; i++)
     {
-        int l, r;
-        scanf("%d %d", &l, &r);
-        printf("%d\n", query(1, l, 1, n, root[l - 1], root[r]));
+        int l = qs[i].l, r = qs[i].r, id = qs[i].id;
+        if (blo[r] - blo[l] < 2)
+        {
+            for (int j = l; j <= r; j++)
+            {
+                min3[b[j]] = min(min3[b[j]], j);
+                max3[b[j]] = max(max3[b[j]], j);
+                res3 = max(res3, max3[b[j]] - min3[b[j]]);
+            }
+            ans[id] = res3;
+            for (int j = l; j <= r; j++)
+                min3[b[j]] = INF, max3[b[j]] = 0;
+            res3 = 0;
+            continue;
+        }
+        if (blo[l] != nb)
+        {
+            for (int j = 1; j <= N; j++)
+            {
+                min1[j] = INF;
+                min2[j] = INF;
+                max1[j] = 0;
+                max2[j] = 0;
+            }
+            res1 = res2 = 0;
+            nb = blo[l];
+            nbr = min(nb * block, n);
+            nr = nbr;
+            nl = nr + 1;
+        }
+        while (nr < r)
+            AddR(++nr);
+        while (nl > l)
+            AddL(--nl);
+        ans[id] = res2;
+        while (nl <= nbr)
+            Del(nl++);
+        res2 = res1;
+    }
+}
+
+int main()
+{
+    // freopen(".in", "r", stdin);
+    n = geti();
+    // printf("%d\n", n);
+    for (int i = 1; i <= n; i++)
+        a[i] = geti();
+    m = geti();
+    // printf("%d\n", m);
+    for (int i = 1; i <= m; i++)
+    {
+        qs[i].id = i;
+        qs[i].l = geti();
+        qs[i].r = geti();
+    }
+    // printf("YES\n");
+    Prework();
+    CaptainMo();
+    for (int i = 1; i <= m; i++)
+    {
+        printf("%d\n", ans[i]);
+        //wri(ans[i]);
+        //putchar('\n');
     }
     return 0;
 }
