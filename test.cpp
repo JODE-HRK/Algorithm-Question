@@ -1,48 +1,32 @@
 #include <bits/stdc++.h>
-#define bit bitset<14>
 using namespace std;
-const int maxn = 1e5 + 7;
-int n, m, k;
-bit a[maxn];
-int blo[maxn], block;
-struct PRO
-{
-	int l, r, id;
-} pro[maxn];
-
-bool judge(bit x, bit y)
-{
-	bit z = x ^ y;
-	if (z.count() == k)
-		return 1;
-	return 0;
-}
-bool cmp(PRO x, PRO y)
-{
-	return (blo[x.l] ^ blo[y.l]) ? x.l < y.l : x.r < y.r;
-}
-void pre()
-{
-	for (int i = 1; i <= n; i++)
-		blo[i] = (i - 1) / block + 1;
-	sort(pro + 1, pro + 1 + m, cmp);
-	
-}
+const int maxn = 4e6 + 7;
+int n, m;
+int w;
+int wei[maxn], val[maxn];
+int dp[maxn];
 int main()
 {
-	scanf("%d %d %d", &n, &m, &k);
-	block = sqrt(n);
-	for (int i = 1; i <= n; i++)
+	int T;
+	scanf("%d", &T);
+	while (T--)
 	{
-		int x;
-		scanf("%d", &x);
-		a[i] = (bit)x;
+		int w1, w2;
+		scanf("%d %d", &w1, &w2);
+		w = w2 - w1;
+		fill(dp + 1, dp + 1 + w, 1000000000);
+		dp[0] = 0;
+		scanf("%d", &n);
+		for (int i = 1; i <= n; i++)
+			scanf("%d %d", &val[i], &wei[i]);
+		for (int i = 1; i <= n; i++)
+			for (int j = wei[i]; j <= w; j++)
+				if (dp[j - wei[i]] != 1000000000)
+					dp[j] = min(dp[j], dp[j - wei[i]] + val[i]);
+		if (dp[w] == 1000000000)
+			printf("This is impossible.\n");
+		else
+			printf("The minimum amount of money in the piggy-bank is %d.\n", dp[w]);
 	}
-	for (int i = 1; i <= m; i++)
-	{
-		scanf("%d %d", &pro[i].l, &pro[i].r);
-		pro[i].id = i;
-	}
-	pre();
 	return 0;
 }
