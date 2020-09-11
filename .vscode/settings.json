@@ -61,6 +61,7 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "string_view": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "random": "cpp"
     }
 }
