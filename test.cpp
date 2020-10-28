@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+#include <bits/stdc++.h>
+=======
+<<<<<<< HEAD
 /*
  * @Descripttion: 
  * @version: 
@@ -65,152 +68,41 @@ int main()
 #include <iostream>
 #include <algorithm>
 #include <queue>
+>>>>>>> 5d6fbdb46ed2fbb3fe61d964965b9fc622d18146
 using namespace std;
-struct node
+int n, k;
+int dp[1010][1010];
+bool judge(int col, int row, int i, int j)
 {
-	int from;
-	int to;
-	int w;
-	int next;
-} e[150 * 150 * 150];
-int a[150][150];
-int b[150][150];
-int divv[150 * 150];
-int cur[150 * 150];
-int head[150 * 150];
-int n, t, ss, tt, cont;
-void add(int from, int to, int w)
-{
-	e[cont].to = to;
-	e[cont].w = w;
-	e[cont].next = head[from];
-	head[from] = cont++;
+	if (col & i == 0 && row & j == 0)
+		return 1;
+	return 0;
 }
-void Getmap()
+int main()
 {
-	cont = 0;
-	ss = n * n * 2 + 1;
-	tt = ss + 1;
-	memset(head, -1, sizeof(head));
-	for (int i = 0; i < n; i++)
+	scanf("%d %d", &n, &k);
+	int state = (1 << n), ans = 0;
+	memset(dp, 0, sizeof(dp));
+	for (int col = 0; col < state; col++)
 	{
-		for (int j = 0; j < n; j++)
+		for (int row = 0; row < state; row++)
 		{
-			if (a[i][j] > 0)
+			for (int i = 0; i < n; i++)
 			{
-				add(ss, i * n + j + 1, a[i][j]);
-				add(i * n + j + 1, ss, 0);
-			}
-			if (b[i][j] > 0)
-			{
-				add(n * n + i * n + j + 1, tt, b[i][j]);
-				add(tt, n * n + i * n + j + 1, 0);
-			}
-		}
-	}
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < n; j++)
-		{
-			if (a[i][j] > 0)
-			{
-				for (int k = 0; k < n; k++)
-				{
-					for (int l = 0; l < n; l++)
+				for (int j = 0; j < n; j++)
+					if (judge(col, row, i, j))
 					{
-						if (b[k][l] > 0)
-						{
-							int u = i * n + j + 1;
-							int v = n * n + k * n + l + 1;
-							if (abs(i - k) + abs(j - l) <= t)
-							{
-								add(u, v, 0x3f3f3f3f);
-								add(v, u, 0);
-							}
-						}
+						int ccol, rrow;
+						ccol = col | i | max(i - 1, 0) | min(i + 1, n - 1);
+						rrow = row | i | max(i - 1, 0) | min(i + 1, n - 1);
+						dp[ccol][rrow] = max(dp[ccol][rrow], dp[col][row] + 1);
+						if (dp[ccol][rrow] == k)
+							ans++;
 					}
-				}
-			}
-		}
-	}
-}
-int makedivv()
-{
-	memset(divv, 0, sizeof(divv));
-	divv[ss] = 1;
-	queue<int> s;
-	s.push(ss);
-	while (!s.empty())
-	{
-		int u = s.front();
-		if (tt == u)
-			return 1;
-		s.pop();
-		for (int i = head[u]; i != -1; i = e[i].next)
-		{
-			int v = e[i].to;
-			int w = e[i].w;
-			if (w && divv[v] == 0)
-			{
-				divv[v] = divv[u] + 1;
-				s.push(v);
 			}
 		}
 >>>>>>> 21e5d29df6664aa0d801d89bbe6004c6b2f2360a
 	}
+	printf("%d", ans);
 	return 0;
 }
-int Dfs(int u, int maxflow, int tt)
-{
-	if (u == tt)
-		return maxflow;
-	int ret = 0;
-	for (int &i = cur[u]; i != -1; i = e[i].next)
-	{
-		int v = e[i].to;
-		int w = e[i].w;
-		if (w && divv[v] == divv[u] + 1)
-		{
-			int f = Dfs(v, min(maxflow - ret, w), tt);
-			e[i].w -= f;
-			e[i ^ 1].w += f;
-			ret += f;
-			if (ret == maxflow)
-				return ret;
-		}
-	}
-	return ret;
-}
-void Dinic()
-{
-	int ans = 0;
-	while (makedivv() == 1)
-	{
-		memcpy(cur, head, sizeof(head));
-		ans += Dfs(ss, 0x3f3f3f3f, tt);
-	}
-	printf("%d\n", ans);
-}
-int main()
-{
-	while (~scanf("%d%d", &n, &t))
-	{
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				scanf("%d", &a[i][j]);
-			}
-		}
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				scanf("%d", &b[i][j]);
-			}
-		}
-		Getmap();
-		Dinic();
-	}
-}
->>>>>>> 74c66ff6cc0e240f68f5a95a9d063118fd9f52b4

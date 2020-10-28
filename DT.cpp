@@ -1,131 +1,109 @@
-/*
- * @Descripttion: 
- * @version: 
- * @Author: JODEHRK
- * @Date: 2020-09-02 21:41:35
- * @LastEditors: JODEHRK
- * @LastEditTime: 2020-09-03 09:43:01
- */
 #include <bits/stdc++.h>
 using namespace std;
-const int maxn = 2e5 + 7;
-int n, m, q, cntnode = n;
-int b[maxn], h[maxn], fa[maxn], val[maxn], sz[maxn], dfn[maxn], tot = 0;
-int root[maxn], cnt = 0, dep[maxn];
-int f[maxn][32], num;
-vector<int> G[maxn];
-struct Edge
+const int maxn = 20020, inf = 0x7f7f7f7f;
+int n, head[maxn * 2], num, tot, ans; //tot记录当前子树点数
+int dis[maxn], flag[maxn], temp[maxn];
+//dis记录子树每一点到根节点的距离，flag用于删除根节点，temp总汇到根节点的距离
+int size[maxn], Max[maxn], root;
+struct edge
 {
-    int fr, to, w;
-    bool operator<(const Edge &x) const
+    int next, to, len;
+} G[maxn * 2];
+void add(int from, int to, int len)
+{
+    G[++num].next = head[from];
+    G[num].to = to;
+    G[num].len = len;
+    head[from] = num;
+}
+inline void input(void)
+{
+    for (int i = 1; i < n; i++)
     {
-        return w < x.w;
+        int x, y, v;
+        scanf("%d %d %d", &x, &y, &v);
+        add(x, y, v), add(y, x, v);
     }
-} edge[maxn];
-struct Tree
-{
-    int l, r, s;
-} tree[maxn * 32];
-int getfa(int x)
-{
-    return x == fa[x] ? x : fa[x] = getfa(fa[x]);
 }
-int insert(int x, int l, int r, int node)
+
+inline void dp(int fa, int cur) //求树的重心
 {
-    int newnode = ++cnt;
-    tree[newnode] = tree[node];
-    if (x == 0)
-        return newnode;
-    if (l == r)
+    size[cur] = 1, Max[cur] = 0;
+    for (int i = head[cur]; i; i = G[i].next)
     {
-        tree[newnode].s++;
-        return newnode;
-    }
-    int mid = (l + r) >> 1;
-    if (x <= mid)
-        tree[newnode].l = insert(x, l, mid, tree[node].l);
-    else
-        tree[newnode].r = insert(x, mid + 1, r, tree[node].r);
-    tree[newnode].s = tree[tree[newnode].l].s + tree[tree[newnode].r].s;
-    return newnode;
-}
-int build(int l, int r)
-{
-    int newnode = ++cnt;
-    tree[newnode].s = 0;
-    if (l == r)
-        return newnode;
-    int mid = (l + r) >> 1;
-    tree[newnode].l = build(l, mid);
-    tree[newnode].r = build(mid + 1, r);
-    return newnode;
-}
-void dfs(int now, int father)
-{
-    dep[now] = dep[father] + 1;
-    fa[now] = father;
-    f[now][0] = father;
-    sz[now] = 1;
-    dfn[now] = ++tot;
-    for (int i = 1; (1 << i) <= dep[now]; i++)
-        f[now][i] = f[f[now][i - 1]][i - 1];
-    root[tot] = insert(h[now], 1, num, root[tot - 1]);
-    int l = G[now].size();
-    for (int i = 0; i < l; i++)
-    {
-        int to = G[now][i];
-        if (to == father)
+        int v = G[i].to;
+        if (flag[v] || v == fa)
             continue;
-        dfs(to, now);
-        sz[now] += sz[to];
+        dp(cur, v);
+        size[cur] += size[v];
+        Max[cur] = max(Max[cur], size[v]);
     }
+    Max[cur] = max(Max[cur], tot - size[cur]);
+    if (Max[root] > Max[cur])
+        root = cur;
+}
+
+inline void dfs(int fa, int cur)
+{
+    temp[++temp[0]] = dis[cur];
+    for (int i = head[cur]; i; i = G[i].next)
+    {
+        int v = G[i].to;
+        if (v == fa || flag[v])
+            continue;
+        dis[v] = dis[cur] + G[i].len;
+        dfs(cur, v);
+    }
+}
+
+int cc[2019];
+inline int calc(int x, int len)
+{
+    dis[x] = len;
+    temp[0] = 0; //temp[0]记录temp数组的长度
+    dfs(0, x);
+    memset(cc, 0, sizeof(cc));
+    for (int i = 1; i <= temp[0]; i++)
+        cc[temp[i] % 2019]++;
+
+    cc[0]--;
+    int res = cc[0] * (cc[0] + 1) / 2;
+    for (int i = 1; i <= 1009; i++)
+        res += cc[i] * cc[2019 - i];
+    return res;
+}
+
+inline void divide(int x)
+{
+    flag[x] = true; //删去根节点
+    ans += calc(x, 0);
+    //cout<<"ans="<<ans<<"\n";
+    for (int i = head[x]; i; i = G[i].next)
+    {
+        int y = G[i].to;
+        if (flag[y])
+            continue;
+        ans -= calc(y, G[i].len); //点对在同一子树的情况
+        tot = size[y], root = 0;
+        dp(0, y);
+        divide(root);
+    }
+}
+inline void reset(void)
+{
+    num = 0;
+    memset(head, 0, sizeof head);
+    memset(flag, 0, sizeof flag);
+    ans = 0, tot = n;
+    root = 0, Max[0] = inf;
 }
 int main()
 {
-    scanf("%d %d %d", &n, &m, &q);
-    for (int i = 1; i <= n; i++)
-        scanf("%d", &h[i]), b[i] = h[i], fa[i] = i, val[i] = 0;
-    sort(b + 1, b + 1 + n);
-    num = unique(b + 1, b + 1 + n) - b - 1;
-    for (int i = 1; i <= n; i++)
-        h[i] = lower_bound(b + 1, b + 1 + n, h[i]) - b;
-    for (int i = 1; i <= m; i++)
-        scanf("%d %d %d", &edge[i].fr, &edge[i].to, &edge[i].w);
-    sort(edge + 1, edge + 1 + m);
-    int cnt = 0;
-    for (int i = 1; i <= m; i++)
-    {
-        int fr = getfa(edge[i].fr), to = getfa(edge[i].to);
-        if (fr != to)
-        {
-            fa[getfa(fr)] = fa[getfa(to)] = ++cntnode;
-            val[cntnode] = edge[i].w;
-            G[fr].push_back(cntnode);
-            G[to].push_back(cntnode);
-            G[cntnode].push_back(fr);
-            G[cntnode].push_back(to);
-            cnt++;
-        }
-        if (cnt == n - 1)
-            break;
-    }
-    root[0] = build(1, num);
-    dep[0] = 0;
-    dfs(cntnode, 0);
-
-    for (int i = 1; i <= q; i++)
-    {
-        int v, x, k;
-        scanf("%d %d %d", &v, &x, &k);
-        for (int j = 20; j >= 0; j--)
-            if (f[v][j] && val[f[v][j]] <= x)
-                v = f[v][j]; //找到深度最小且点权不大于k的祖先
-        if (sz[v] / 2 < k)
-        {
-            printf("-1\n");
-            continue;
-        }
-        printf("%d\n", query());
-    }
+    scanf("%d", &n);
+    reset();
+    input();
+    dp(0, 1);
+    divide(root);
+    printf("%d", ans);
     return 0;
 }

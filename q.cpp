@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * @Descripttion: 
  * @version: 
@@ -37,3 +38,49 @@ int main()
     printf("%lld", merge(1ll, 1ll << n));
     return 0;
 }
+=======
+#include <bits/stdc++.h>
+#define ll long long
+using namespace std;
+const int mod = 1e9 + 7;
+const int maxn = 1e5 + 7;
+int s[maxn], z[maxn], bst[maxn];
+int n, m;
+int main()
+{
+    while (scanf("%d%d", &n, &m))
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            scanf("%d", &s[i]);
+            s[i]--;
+        }
+        for (int i = 0; i < n / 2; i++)
+            swap(s[i], s[n - i - 1]);
+        for (int i = 1, j = 0; i < n; ++i)
+        {
+            if (i < j + z[j])
+            {
+                z[i] = min(j + z[j] - i, z[i - j]);
+            }
+            while (i + z[i] < n && s[z[i]] == s[i + z[i]])
+            {
+                z[i]++;
+            }
+        }
+        for (int i = 0; i < n; ++i)
+        {
+            bst[s[i]] = std::max(bst[s[i]], 1 + z[i + 1]);
+        }
+        ll three = 1;
+        ll ans = 0;
+        for (int i = 0; i < m; ++i)
+        {
+            three = 3LL * three % mod;
+            ans ^= 1LL * three * (n + 1 - bst[i]) % mod;
+            assert(bst[i] <= n + 1);
+        }
+        printf("%lld\n", ans);
+    }
+}
+>>>>>>> b88f7f830f753cc2c23c0b171e899f678054c8ae
