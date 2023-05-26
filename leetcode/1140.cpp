@@ -14,7 +14,7 @@ public:
             taken += piles[i];
             res = max(res, totalLeast - dfs(piles, i + 1, max(i - start + 1, M), totalLeast - taken));
         }
-        return res;
+        return dp[start][M] = res;
     }
 
     int stoneGameII(vector<int>& piles) {
